@@ -1,7 +1,5 @@
 package DataStructure;
 
-import Lexer.Token;
-
 public class ASTNode { //孩子兄弟结点cstree
     private Object data; //结点的数据域
     private ASTNode firstchild,nextsibling;  //左孩子，右兄弟

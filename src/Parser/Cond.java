@@ -1,7 +1,7 @@
 package Parser;
 
 import DataStructure.ASTNode;
-import Lexer.Token;
+import DataStructure.Token;
 
 /**
  * 条件表达式 Cond → LOrExp // 存在即可

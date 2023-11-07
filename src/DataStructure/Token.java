@@ -1,6 +1,7 @@
-package Lexer;
+package DataStructure;
 
 import DataStructure.ASTNode;
+import Lexer.LexType;
 import Parser.NonTerminal;
 import Parser.NonTerminalType;
 
@@ -56,7 +57,7 @@ public class Token {
      * @param type  单词类型
      * @param line  单词所在行
      */
-    Token(String token, LexType type, int line) {
+    public Token(String token, LexType type, int line) {
         this.token = token;
         this.type = type;
         this.line = line;
@@ -70,7 +71,7 @@ public class Token {
      * @param line  单词所在行
      * @param value 单词数值
      */
-    Token(String token, LexType type, int line, int value) {
+    public Token(String token, LexType type, int line, int value) {
         this.token = token;
         this.type = type;
         this.line = line;
@@ -91,7 +92,7 @@ public class Token {
     /**
      * Token构造方法，用于表示文档到达结尾
      */
-    Token() {
+    public Token() {
         is_end = true;
         line = -1;
     }

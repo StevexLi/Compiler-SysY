@@ -1,7 +1,7 @@
 package Parser;
 
 import DataStructure.ASTNode;
-import Lexer.Token;
+import DataStructure.Token;
 
 /**
  * 表达式 Exp → AddExp

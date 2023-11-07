@@ -1,6 +1,5 @@
 package DataStructure;
 
-import Lexer.Token;
 import Parser.NonTerminalType;
 
 import java.util.ArrayList;

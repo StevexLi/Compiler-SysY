@@ -1,4 +1,7 @@
 import DataStructure.AST;
+import DataStructure.ErrorReport;
+import DataStructure.ErrorReporter;
+import DataStructure.Token;
 import Lexer.*;
 import Exception.*;
 import Parser.*;
@@ -39,6 +42,19 @@ public class Compiler {
     public static ArrayList<Token> ast_post_root_traverse = new ArrayList<>();
 
     /**
+     * 是否进行错误检测
+     */
+    public static boolean error_detection = true;
+    /**
+     * 错误输出文件
+     */
+    public static String error_output = "error.txt";
+    /**
+     * 错误列表
+     */
+    public static ArrayList<ErrorReport> error_list = new ArrayList<>();
+
+    /**
      * @param source_code 源代码文件路径
      * @throws IOException
      */
@@ -68,6 +84,20 @@ public class Compiler {
         writer.close();
     }
 
+    static void writeErrorList() throws IOException {
+        if (error_detection){
+            FileWriter writer;
+            writer = new FileWriter(error_output);
+            for (ErrorReport token:error_list){
+                String str;
+                str = token.type.erEnumGetWord()+' '+token.line;
+                writer.write(str+'\n');
+            }
+            writer.flush();
+            writer.close();
+        }
+    }
+
     /**
      * 主要
      *
@@ -76,9 +106,11 @@ public class Compiler {
     public static void main(String[] args) {
         try{
             getSourceCodeString(source_code);
+            ErrorReporter.setErrorReporter(error_detection,error_list);
             Lexer lexer = new Lexer(source_code_string,token_list);
             Parser parser = new Parser(lexer,ast,token_list,ast_post_root_traverse);
-            writeTokenList();
+//            writeTokenList();
+            writeErrorList();
         } catch (CompilerException e) {
             if (!e.getType().equals("0")){
                 System.out.println("Exception.CompilerException:"+e.getType()+' '+e.getLine()+' '+e.getMessage());

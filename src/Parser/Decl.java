@@ -2,7 +2,7 @@ package Parser;
 
 import DataStructure.ASTNode;
 import Lexer.LexType;
-import Lexer.Token;
+import DataStructure.Token;
 
 public class Decl extends NonTerminal {
     ASTNode ConstDecl;

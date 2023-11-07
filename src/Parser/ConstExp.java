@@ -1,7 +1,7 @@
 package Parser;
 
 import DataStructure.ASTNode;
-import Lexer.Token;
+import DataStructure.Token;
 
 public class ConstExp extends NonTerminal {
     ASTNode AddExp;

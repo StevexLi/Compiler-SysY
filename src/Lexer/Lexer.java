@@ -1,5 +1,8 @@
 package Lexer;
 
+import DataStructure.ErrorReporter;
+import DataStructure.ErrorType;
+import DataStructure.Token;
 import Exception.*;
 import Parser.Parser;
 
@@ -268,7 +271,8 @@ public class Lexer {
                                 token.append("\\n");
                                 curPos++;
                             } else if (c=='\\') {// 单独一个'\'出现为非法
-                                throw new CompilerException("a",lineNum,"invalid Char in FormatString:'"+c+"'"); // todo:错误处理a
+//                                throw new CompilerException("a",lineNum,"invalid Char in FormatString:'"+c+"'"); // fixme:错误处理a
+                                ErrorReporter.reportError(lineNum, ErrorType.EA);
                             } else {
                                 token.append(c);
                             }
@@ -277,7 +281,8 @@ public class Lexer {
                                 token.append("%d");
                                 curPos++;
                             } else {
-                                throw new CompilerException("invalid FormatChar:'"+c+"'");
+//                                throw new CompilerException("invalid FormatChar:'"+c+"'"); // fixme:错误处理a
+                                ErrorReporter.reportError(lineNum, ErrorType.EA);
                             }
                         } else if (c == '"') {
                             token.append(c);
@@ -285,7 +290,8 @@ public class Lexer {
                             break;
                         }
                         else { // 非法Char
-                            throw new CompilerException("a",lineNum,"invalid Char in FormatString:'"+c+"'"); // todo:错误处理a
+//                            throw new CompilerException("a",lineNum,"invalid Char in FormatString:'"+c+"'"); // fixme:错误处理a
+                            ErrorReporter.reportError(lineNum, ErrorType.EA);
                         }
                         curPos++;
                     }

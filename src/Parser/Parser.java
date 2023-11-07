@@ -3,7 +3,7 @@ package Parser;
 import DataStructure.AST;
 import DataStructure.ASTNode;
 import Lexer.Lexer;
-import Lexer.Token;
+import DataStructure.Token;
 
 import java.util.ArrayList;
 
