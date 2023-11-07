@@ -1,4 +1,4 @@
-package Parser;
+package DataStructure;
 
 import Lexer.Token;
 

@@ -1,6 +1,6 @@
 package Lexer;
 
-import Parser.ASTNode;
+import DataStructure.ASTNode;
 import Parser.NonTerminal;
 import Parser.NonTerminalType;
 

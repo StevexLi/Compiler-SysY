@@ -1,5 +1,7 @@
 package Parser;
 
+import DataStructure.ASTNode;
+
 public class _Number_ extends NonTerminal {
     ASTNode _Number_;
     int value;

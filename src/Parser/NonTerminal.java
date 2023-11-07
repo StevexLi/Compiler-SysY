@@ -1,5 +1,7 @@
 package Parser;
 
+import DataStructure.ASTNode;
+
 public class NonTerminal {
     public NonTerminalType nt_type;
     public ASTNode firstchild;

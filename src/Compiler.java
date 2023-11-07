@@ -1,3 +1,4 @@
+import DataStructure.AST;
 import Lexer.*;
 import Exception.*;
 import Parser.*;

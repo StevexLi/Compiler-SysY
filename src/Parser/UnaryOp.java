@@ -1,5 +1,6 @@
 package Parser;
 
+import DataStructure.ASTNode;
 import Lexer.LexType;
 import Exception.*;
 
