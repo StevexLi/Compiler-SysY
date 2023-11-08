@@ -17,11 +17,11 @@ public enum ErrorType {
     EF("f","无返回值的函数存在不匹配的return语句"),
     EG("g","有返回值的函数缺少return语句"),
     EH("h","不能改变常量的值"),
-    EI("i","缺少分号"),
-    EJ("j","缺少右小括号’)’"),
+    EI("i","缺少分号"), //
+    EJ("j","缺少右小括号’)’"), //
     EK("k","缺少右中括号’]’"),
     EL("l","printf中格式字符与表达式个数不匹配"), //
-    EM("m","在非循环块中使用break和continue语句"),
+    EM("m","在非循环块中使用break和continue语句"), //
     ;
 
     private String word;

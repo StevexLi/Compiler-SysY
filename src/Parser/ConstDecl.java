@@ -1,6 +1,8 @@
 package Parser;
 
 import DataStructure.ASTNode;
+import DataStructure.ErrorReporter;
+import DataStructure.ErrorType;
 import Lexer.LexType;
 import DataStructure.Token;
 import Exception.*;
@@ -29,7 +31,8 @@ public class ConstDecl extends NonTerminal {
                     SEMICN = new ASTNode(Parser.now);
                     Parser.lexer.next();
                 } else {
-                    throw new CompilerException("2",Parser.now.line,"ConstDecl2");
+//                    throw new CompilerException("2",Parser.now.line,"ConstDecl2");
+                    ErrorReporter.reportError(Parser.prev.line, ErrorType.EI); // fixme:错误处理i
                 }
             }
         } else {

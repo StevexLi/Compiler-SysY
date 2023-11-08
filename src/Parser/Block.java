@@ -15,7 +15,7 @@ import java.util.ArrayList;
  */
 public class Block extends NonTerminal {
     ArrayList<ASTNode> BlockItem_list = new ArrayList<>();
-
+    boolean in_for = false;
     Block() throws Exception {
         this.nt_type = NonTerminalType.BLOCK;
         if (Parser.now.equalLexType(LexType.LBRACE)) {
@@ -24,7 +24,31 @@ public class Block extends NonTerminal {
             while (!Parser.now.equalLexType(LexType.RBRACE)) { // { BlockItem }
                 if (Parser.now.is_end)
                     throw new CompilerException("2", Parser.now.line, "Block");
-                BlockItem_list.add(new ASTNode(new Token(new BlockItem())));
+                BlockItem_list.add(new ASTNode(new Token(new BlockItem(in_for))));
+            }
+            if (Parser.now.equalLexType(LexType.RBRACE)) {
+                BlockItem_list.add(new ASTNode(Parser.now));
+                Parser.lexer.next();
+            }
+            for (int i=0;i<BlockItem_list.size();i++){
+                setFirstchild(BlockItem_list.get(i));
+                if (i+1<BlockItem_list.size()){
+                    BlockItem_list.get(i).setNextSibling(BlockItem_list.get(i+1));
+                }
+            }
+        }
+    }
+
+    Block(boolean in_for_loop) throws Exception {
+        this.nt_type = NonTerminalType.BLOCK;
+        this.in_for = in_for_loop;
+        if (Parser.now.equalLexType(LexType.LBRACE)) {
+            BlockItem_list.add(new ASTNode(Parser.now));
+            Parser.lexer.next();
+            while (!Parser.now.equalLexType(LexType.RBRACE)) { // { BlockItem }
+                if (Parser.now.is_end)
+                    throw new CompilerException("2", Parser.now.line, "Block");
+                BlockItem_list.add(new ASTNode(new Token(new BlockItem(in_for))));
             }
             if (Parser.now.equalLexType(LexType.RBRACE)) {
                 BlockItem_list.add(new ASTNode(Parser.now));

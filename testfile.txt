@@ -7,4 +7,18 @@ int main() {
     printf("%d,%d",a,1);
     printf("%d,%d",a);
     printf("123",a);
+    int a;
+    break;
+    for (i=0;i<10;){
+        a = getint(;
+        break
+        a = 1
+        break;
+    }
+    continue;
+    for (;a<=10;) {
+        if (a==1 {
+            continue;
+        }
+    }
 }

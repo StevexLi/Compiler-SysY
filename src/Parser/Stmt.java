@@ -27,11 +27,14 @@ import java.util.ArrayList;
 public class Stmt extends NonTerminal {
     String Stmt_type;
     ArrayList<ASTNode> Stmt_list = new ArrayList<>();
-    Stmt() throws Exception {
+    boolean in_for = false; // 标识是否位于for循环中
+
+    Stmt(boolean in_for_loop) throws Exception {
         this.nt_type = NonTerminalType.STMT;
+        this.in_for = in_for_loop;
         switch (Parser.now.type){
             case LBRACE: // Block
-                Stmt_list.add(new ASTNode(new Token(new Block())));
+                Stmt_list.add(new ASTNode(new Token(new Block(in_for))));
                 break;
             case IFTK: // 'if' '(' Cond ')' Stmt [ 'else' Stmt ] // 1.有else 2.无else
                 Stmt_list.add(new ASTNode(Parser.now));
@@ -43,14 +46,21 @@ public class Stmt extends NonTerminal {
                     if (Parser.now.equalLexType(LexType.RPARENT)){
                         Stmt_list.add(new ASTNode(Parser.now));
                         Parser.lexer.next();
-                        Stmt_list.add(new ASTNode(new Token(new Stmt())));
+                        Stmt_list.add(new ASTNode(new Token(new Stmt(in_for))));
                         if (Parser.now.equalLexType(LexType.ELSETK)){
                             Stmt_list.add(new ASTNode(Parser.now));
                             Parser.lexer.next();
-                            Stmt_list.add(new ASTNode(new Token(new Stmt())));
+                            Stmt_list.add(new ASTNode(new Token(new Stmt(in_for))));
                         }
                     } else {
-                        throw new CompilerException("2",Parser.now.line, "Stmt_if2");
+//                        throw new CompilerException("2",Parser.now.line, "Stmt_if2");
+                        ErrorReporter.reportError(Parser.prev.line, ErrorType.EJ); // fixme:错误处理j
+                        Stmt_list.add(new ASTNode(new Token(new Stmt(in_for))));
+                        if (Parser.now.equalLexType(LexType.ELSETK)){
+                            Stmt_list.add(new ASTNode(Parser.now));
+                            Parser.lexer.next();
+                            Stmt_list.add(new ASTNode(new Token(new Stmt(in_for))));
+                        }
                     }
                 } else {
                     throw new CompilerException("2",Parser.now.line, "Stmt_if");
@@ -69,7 +79,8 @@ public class Stmt extends NonTerminal {
                         Stmt_list.add(new ASTNode(Parser.now));
                         Parser.lexer.next();
                     } else {
-                        throw new CompilerException("2",Parser.now.line, "Stmt_for1");
+//                        throw new CompilerException("2",Parser.now.line, "Stmt_for1");
+                        ErrorReporter.reportError(Parser.prev.line, ErrorType.EI); // fixme:错误处理i
                     }
                     if (!Parser.now.equalLexType(LexType.SEMICN)){
                         Stmt_list.add(new ASTNode(new Token(new Cond())));
@@ -78,7 +89,8 @@ public class Stmt extends NonTerminal {
                         Stmt_list.add(new ASTNode(Parser.now));
                         Parser.lexer.next();
                     } else {
-                        throw new CompilerException("2",Parser.now.line, "Stmt_for2");
+//                        throw new CompilerException("2",Parser.now.line, "Stmt_for2");
+                        ErrorReporter.reportError(Parser.prev.line, ErrorType.EI); // fixme:错误处理i
                     }
                     if (!Parser.now.equalLexType(LexType.RPARENT)){
                         Stmt_list.add(new ASTNode(new Token(new ForStmt())));
@@ -87,9 +99,10 @@ public class Stmt extends NonTerminal {
                         Stmt_list.add(new ASTNode(Parser.now));
                         Parser.lexer.next();
                     } else {
-                        throw new CompilerException("2",Parser.now.line, "Stmt_for3");
+//                        throw new CompilerException("2",Parser.now.line, "Stmt_for3");
+                        ErrorReporter.reportError(Parser.prev.line, ErrorType.EJ); // fixme:错误处理j
                     }
-                    Stmt_list.add(new ASTNode(new Token(new Stmt())));
+                    Stmt_list.add(new ASTNode(new Token(new Stmt(true))));
                 } else {
                     throw new CompilerException("2",Parser.now.line, "Stmt_for");
                 }
@@ -97,37 +110,50 @@ public class Stmt extends NonTerminal {
             case BREAKTK: //  'break' ';'
                 Stmt_type = "BREAK";
                 Stmt_list.add(new ASTNode(Parser.now));
+                int break_line = Parser.now.line;
+                if (!in_for){
+                    ErrorReporter.reportError(break_line,ErrorType.EM); // fixme:错误处理m
+                }
                 Parser.lexer.next();
                 if (Parser.now.equalLexType(LexType.SEMICN)){
                     Stmt_list.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
                 } else {
-                    throw new CompilerException("2",Parser.now.line, "Stmt_break");
+//                    throw new CompilerException("2",Parser.now.line, "Stmt_break");
+                    ErrorReporter.reportError(break_line,ErrorType.EI); // fixme:错误处理i
                 }
                 break;
             case CONTINUETK: // 'continue' ';'
                 Stmt_type = "CONTINUE";
                 Stmt_list.add(new ASTNode(Parser.now));
+                int continue_line = Parser.now.line;
+                if (!in_for){
+                    ErrorReporter.reportError(continue_line,ErrorType.EM); // fixme:错误处理m
+                }
                 Parser.lexer.next();
                 if (Parser.now.equalLexType(LexType.SEMICN)){
                     Stmt_list.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
                 } else {
-                    throw new CompilerException("2",Parser.now.line, "Stmt_continue");
+//                    throw new CompilerException("2",Parser.now.line, "Stmt_continue");
+                    ErrorReporter.reportError(continue_line,ErrorType.EI); // fixme:错误处理i
                 }
                 break;
             case RETURNTK: // 'return' [Exp] ';' // 1.有Exp 2.无Exp
                 Stmt_type = "RETURN";
                 Stmt_list.add(new ASTNode(Parser.now));
+                int return_line = Parser.now.line;
                 Parser.lexer.next();
                 if (!Parser.now.equalLexType(LexType.SEMICN)){
                     Stmt_list.add(new ASTNode(new Token(new Exp())));
+                    return_line = Parser.prev.line;
                 }
                 if (Parser.now.equalLexType(LexType.SEMICN)){
                     Stmt_list.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
                 } else {
-                    throw new CompilerException("2",Parser.now.line, "Stmt_return");
+//                    throw new CompilerException("2",Parser.now.line, "Stmt_return");
+                    ErrorReporter.reportError(return_line, ErrorType.EI); // fixme:错误处理i
                 }
                 break;
             case PRINTFTK: // 'printf''('FormatString{','Exp}')'';' // 1.有Exp 2.无Exp
@@ -158,10 +184,19 @@ public class Stmt extends NonTerminal {
                             Stmt_list.add(new ASTNode(Parser.now));
                             Parser.lexer.next();
                         } else {
-                            throw new CompilerException("2",Parser.now.line, "Stmt_printf3");
+//                            throw new CompilerException("2",Parser.now.line, "Stmt_printf3");
+                            ErrorReporter.reportError(Parser.prev.line, ErrorType.EI); // fixme:错误处理i
                         }
                     } else {
-                        throw new CompilerException("2",Parser.now.line, "Stmt_printf2");
+//                        throw new CompilerException("2",Parser.now.line, "Stmt_printf2");
+                        ErrorReporter.reportError(Parser.prev.line, ErrorType.EJ); // fixme:错误处理j
+                        if (Parser.now.equalLexType(LexType.SEMICN)){
+                            Stmt_list.add(new ASTNode(Parser.now));
+                            Parser.lexer.next();
+                        } else {
+//                            throw new CompilerException("2",Parser.now.line, "Stmt_printf3");
+                            ErrorReporter.reportError(Parser.prev.line, ErrorType.EI); // fixme:错误处理i
+                        }
                     }
                 } else {
                     throw new CompilerException("2",Parser.now.line, "Stmt_printf1");
@@ -180,7 +215,8 @@ public class Stmt extends NonTerminal {
                     Stmt_list.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
                 } else {
-                    throw new CompilerException("2",Parser.now.line, "Stmt_[Exp];");
+//                    throw new CompilerException("2",Parser.now.line, "Stmt_[Exp];");
+                    ErrorReporter.reportError(Parser.prev.line, ErrorType.EI); // fixme:错误处理i
                 }
                 break;
             case IDENFR: //  Stmt → LVal '=' Exp ';'    // FIRST={Ident} LVal '=' 'getint''('')'';'    // FIRST={Ident} | [Exp] ';'     // FIRST={(,Number,Ident,+,-,!}
@@ -191,7 +227,7 @@ public class Stmt extends NonTerminal {
                     Parser.lexer.next();
                 } else if (Parser.now.equalLexType(LexType.ASSIGN)){
                     ASTNode node2 = node1;
-                    for (int i=0;i<5;i++){
+                    for (int i=0;i<5;i++){ // 提取出Exp内的LVal
                         node2 = node2.getFirstChild();
                         if (node2==null)
                             throw new CompilerException("2",Parser.now.line, "Stmt_ident2");
@@ -211,6 +247,16 @@ public class Stmt extends NonTerminal {
                                 if (Parser.now.equalLexType(LexType.SEMICN)){
                                     Stmt_list.add(new ASTNode(Parser.now));
                                     Parser.lexer.next();
+                                } else {
+                                    ErrorReporter.reportError(Parser.prev.line, ErrorType.EI); // fixme:错误处理i
+                                }
+                            } else {
+                                ErrorReporter.reportError(Parser.prev.line, ErrorType.EJ); // fixme:错误处理j
+                                if (Parser.now.equalLexType(LexType.SEMICN)){
+                                    Stmt_list.add(new ASTNode(Parser.now));
+                                    Parser.lexer.next();
+                                } else {
+                                    ErrorReporter.reportError(Parser.prev.line, ErrorType.EI); // fixme:错误处理i
                                 }
                             }
                         }
@@ -219,10 +265,13 @@ public class Stmt extends NonTerminal {
                         if (Parser.now.equalLexType(LexType.SEMICN)){
                             Stmt_list.add(new ASTNode(Parser.now));
                             Parser.lexer.next();
+                        } else {
+                            ErrorReporter.reportError(Parser.prev.line, ErrorType.EI); // fixme:错误处理i
                         }
                     }
                 } else {
-                    throw new CompilerException("2",Parser.now.line, "Stmt_ident;");
+//                    throw new CompilerException("2",Parser.now.line, "Stmt_ident;");
+                    ErrorReporter.reportError(Parser.prev.line, ErrorType.EI); // fixme:错误处理i
                 }
                 break;
             default: // 啥都不是

@@ -40,7 +40,7 @@ public class PrimaryExp extends NonTerminal {
                 Number = new ASTNode(new Token(new _Number_()));
                 setFirstchild(Number);
             } else {
-                throw new CompilerException("2",Parser.now.line,"PrimaryExp2");
+//                throw new CompilerException("2",Parser.now.line,"PrimaryExp2");
             }
         }
     }

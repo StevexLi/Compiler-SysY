@@ -21,11 +21,9 @@ public class ForStmt extends NonTerminal {
             ASSIGN = new ASTNode(Parser.now);
             Parser.lexer.next();
             Exp = new ASTNode(new Token(new Exp()));
-        } else {
-            throw new CompilerException("2",Parser.now.line, "ForStmt");
+            setFirstchild(LVal);
+            LVal.setNextSibling(ASSIGN);
+            ASSIGN.setNextSibling(Exp);
         }
-        setFirstchild(LVal);
-        LVal.setNextSibling(ASSIGN);
-        ASSIGN.setNextSibling(Exp);
     }
 }

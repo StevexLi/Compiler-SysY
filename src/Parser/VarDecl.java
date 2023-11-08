@@ -1,6 +1,8 @@
 package Parser;
 
 import DataStructure.ASTNode;
+import DataStructure.ErrorReporter;
+import DataStructure.ErrorType;
 import Lexer.LexType;
 import DataStructure.Token;
 import Exception.*;
@@ -31,7 +33,8 @@ public class VarDecl extends NonTerminal{
                 SEMICN = new ASTNode(Parser.now);
                 Parser.lexer.next();
             } else {
-                throw new CompilerException("2",Parser.now.line,"VarDecl");
+//                throw new CompilerException("2",Parser.now.line,"VarDecl");
+                ErrorReporter.reportError(Parser.prev.line, ErrorType.EI); // fixme:错误处理i
             }
         }
         setFirstchild(BType);

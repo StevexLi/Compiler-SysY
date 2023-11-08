@@ -1,6 +1,8 @@
 package Parser;
 
 import DataStructure.ASTNode;
+import DataStructure.ErrorReporter;
+import DataStructure.ErrorType;
 import Lexer.LexType;
 import DataStructure.Token;
 import Exception.*;
@@ -37,7 +39,8 @@ public class UnaryExp extends NonTerminal { //
                     FuncRParams.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
                 } else {
-                    throw new CompilerException("2",Parser.now.line,"UnaryExp");
+//                    throw new CompilerException("2",Parser.now.line,"UnaryExp");
+                    ErrorReporter.reportError(Parser.prev.line, ErrorType.EJ); // fixme:错误处理j
                 }
             } else {
                 FuncRParams.add(new ASTNode(Parser.now));

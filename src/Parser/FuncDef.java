@@ -1,6 +1,8 @@
 package Parser;
 
 import DataStructure.ASTNode;
+import DataStructure.ErrorReporter;
+import DataStructure.ErrorType;
 import Lexer.LexType;
 import DataStructure.Token;
 
@@ -32,22 +34,24 @@ public class FuncDef extends NonTerminal {
                 if (Parser.now.equalLexType(LexType.RPARENT)){
                     FuncFParams.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
-                    Block = new ASTNode(new Token(new Block()));
-                    setFirstchild(FuncType);
-                    FuncType.setNextSibling(Ident);
-                    ASTNode node1 = new ASTNode();
-                    ASTNode node0 = Ident;
-                    for (int i=0;i<FuncFParams.size();i++){
-                        node1 = FuncFParams.get(i);
-                        if (i==0){
-                            node0.setNextSibling(node1);
-                        }
-                        if (i<FuncFParams.size()-1)
-                            node1.setNextSibling(FuncFParams.get(i+1));
-                        node0 = node1;
-                    }
-                    node1.setNextSibling(Block);
+                } else {
+                    ErrorReporter.reportError(Parser.prev.line, ErrorType.EJ); // fixme:错误处理j
                 }
+                Block = new ASTNode(new Token(new Block()));
+                setFirstchild(FuncType);
+                FuncType.setNextSibling(Ident);
+                ASTNode node1 = new ASTNode();
+                ASTNode node0 = Ident;
+                for (int i=0;i<FuncFParams.size();i++){
+                    node1 = FuncFParams.get(i);
+                    if (i==0){
+                        node0.setNextSibling(node1);
+                    }
+                    if (i<FuncFParams.size()-1)
+                        node1.setNextSibling(FuncFParams.get(i+1));
+                    node0 = node1;
+                }
+                node1.setNextSibling(Block);
             }
         }
     }

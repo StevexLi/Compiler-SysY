@@ -13,13 +13,15 @@ import DataStructure.Token;
 public class BlockItem extends NonTerminal {
     ASTNode Decl;
     ASTNode Stmt;
-    BlockItem() throws Exception {
+    boolean in_for = false;
+    BlockItem(boolean in_for_loop) throws Exception {
+        this.in_for = in_for_loop;
         this.nt_type = NonTerminalType.BLOCKITEM;
         if (Parser.now.equalLexType(LexType.INTTK)||Parser.now.equalLexType(LexType.CONSTTK)){ // Decl
             Decl = new ASTNode(new Token(new Decl()));
             setFirstchild(Decl);
         } else { // Stmt
-            Stmt = new ASTNode(new Token(new Stmt()));
+            Stmt = new ASTNode(new Token(new Stmt(in_for)));
             setFirstchild(Stmt);
         }
     }

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 public class Parser {
     public static Lexer lexer;
     public static Token now;
+    public static Token prev; // 上一个Token，用于错误处理行号报告
     public static Token pre_read;
     public static Token prepre_read;
     public static AST ast;

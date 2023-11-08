@@ -327,6 +327,7 @@ public class Lexer {
     }
 
     public Token next() throws Exception {
+        Parser.prev = Parser.now;
         try{
             Parser.now = token_list.get(++curIndex);
             return Parser.now;
