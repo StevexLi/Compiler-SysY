@@ -9,7 +9,7 @@ import Exception.*;
  * @date 2023/11/07
  */
 public enum ErrorType {
-    EA("a","非法符号"),
+    EA("a","非法符号"), //
     EB("b","名字重定义"),
     EC("c","未定义的名字"),
     ED("d","函数参数个数不匹配"),
@@ -20,7 +20,7 @@ public enum ErrorType {
     EI("i","缺少分号"),
     EJ("j","缺少右小括号’)’"),
     EK("k","缺少右中括号’]’"),
-    EL("l","printf中格式字符与表达式个数不匹配"),
+    EL("l","printf中格式字符与表达式个数不匹配"), //
     EM("m","在非循环块中使用break和continue语句"),
     ;
 

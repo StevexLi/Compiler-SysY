@@ -1,6 +1,8 @@
 package Parser;
 
 import DataStructure.ASTNode;
+import DataStructure.ErrorReporter;
+import DataStructure.ErrorType;
 import Lexer.LexType;
 import DataStructure.Token;
 import Exception.*;
@@ -131,16 +133,23 @@ public class Stmt extends NonTerminal {
             case PRINTFTK: // 'printf''('FormatString{','Exp}')'';' // 1.有Exp 2.无Exp
                 Stmt_type = "PRINTF";
                 Stmt_list.add(new ASTNode(Parser.now));
+                int printf_line = Parser.now.line;
                 Parser.lexer.next();
                 if (Parser.now.equalLexType(LexType.LPARENT)){
                     Stmt_list.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
+                    int d = Parser.now.value; // FormatString里%d的个数
+                    int real_d = 0; // printf里参数个数
                     Stmt_list.add(new ASTNode(Parser.now)); // FormatString
                     Parser.lexer.next();
                     while (Parser.now.equalLexType(LexType.COMMA)){
                         Stmt_list.add(new ASTNode(Parser.now));
                         Parser.lexer.next();
                         Stmt_list.add(new ASTNode(new Token(new Exp())));
+                        real_d++;
+                    }
+                    if (d!=real_d){
+                        ErrorReporter.reportError(printf_line, ErrorType.EL); // fixme:错误处理l
                     }
                     if (Parser.now.equalLexType(LexType.RPARENT)){
                         Stmt_list.add(new ASTNode(Parser.now));

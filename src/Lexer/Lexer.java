@@ -264,6 +264,7 @@ public class Lexer {
                 case '"': // FormatString
                     token.append(c);
                     curPos++;
+                    int d = 0;
                     while (curPos<source_length) {
                         c = source.charAt(curPos);
                         if (isNormalChar(c)) { // NormalChar
@@ -279,6 +280,7 @@ public class Lexer {
                         } else if (c == '%') { // %d(FormatChar)
                             if ((curPos+1)<source_length && source.charAt(curPos+1) == 'd') {
                                 token.append("%d");
+                                d++;
                                 curPos++;
                             } else {
 //                                throw new CompilerException("invalid FormatChar:'"+c+"'"); // fixme:错误处理a
@@ -297,7 +299,7 @@ public class Lexer {
                     }
                     s = token.toString();
                     token.setLength(0);
-                    token_list.add(new Token(s,LexType.STRCON,lineNum));
+                    token_list.add(new Token(s,LexType.STRCON,lineNum,d));
                     break;
                 default:
                     throw new CompilerException("invalid input");

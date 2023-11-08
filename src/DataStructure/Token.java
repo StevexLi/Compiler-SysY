@@ -25,7 +25,7 @@ public class Token {
      */
     public int line;
     /**
-     * 单词数值（仅数值常量）
+     * 单词数值（仅数值常量）/FormatString的%d个数
      */
     public int value;
     /**
@@ -69,7 +69,7 @@ public class Token {
      * @param token 单词
      * @param type  单词类型
      * @param line  单词所在行
-     * @param value 单词数值
+     * @param value 单词数值/FormatString的%d个数
      */
     public Token(String token, LexType type, int line, int value) {
         this.token = token;

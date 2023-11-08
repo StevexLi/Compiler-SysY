@@ -1,6 +1,10 @@
 int main() {
     printf("%d\%f&",1);
     printf("\n");
-    printf("%d");
+    printf("%f");
     printf("&");
+    printf("\");
+    printf("%d,%d",a,1);
+    printf("%d,%d",a);
+    printf("123",a);
 }
