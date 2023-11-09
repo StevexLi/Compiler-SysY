@@ -21,11 +21,11 @@ public class ConstDecl extends NonTerminal {
             if (Parser.lexer.preRead().equalLexType(LexType.INTTK)){
                 Parser.lexer.next();
                 BType = new ASTNode(new Token(new BType()));
-                ConstDef.add(new ASTNode(new Token(new ConstDef())));
+                ConstDef.add(new ASTNode(new Token(new ConstDef(LexType.INTTK))));
                 while (Parser.now.equalLexType(LexType.COMMA)) {
                     ConstDef.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
-                    ConstDef.add(new ASTNode(new Token(new ConstDef())));
+                    ConstDef.add(new ASTNode(new Token(new ConstDef(LexType.INTTK))));
                 }
                 if (Parser.now.equalLexType(LexType.SEMICN)){
                     SEMICN = new ASTNode(Parser.now);

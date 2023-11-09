@@ -2,6 +2,7 @@ package Parser;
 
 import DataStructure.AST;
 import DataStructure.ASTNode;
+import DataStructure.SymbolTable;
 import Lexer.Lexer;
 import DataStructure.Token;
 
@@ -17,12 +18,17 @@ public class Parser {
     public static ASTNode CompUnit;
     ArrayList<Token> token_list;
     ArrayList<Token> ast_post_root_traverse;
+    public static ArrayList<SymbolTable> s_table_list = new ArrayList<>();
+    public static SymbolTable root;
+    public static SymbolTable cur;
+    public static SymbolTable pre;
 
-    public Parser(Lexer lexer,AST ast, ArrayList<Token> token_list, ArrayList<Token> ast_post_root_traverse) throws Exception {
+    public Parser(Lexer lexer,AST ast, ArrayList<Token> token_list, ArrayList<Token> ast_post_root_traverse,ArrayList<SymbolTable> s_table_list) throws Exception {
         Parser.lexer = lexer;
         Parser.ast = ast;
         this.token_list = token_list;
         this.ast_post_root_traverse = ast_post_root_traverse;
+        Parser.s_table_list = s_table_list;
         syntaxAnalysis();
         Parser.ast.postRootTraverseToList(ast.getRoot(),ast_post_root_traverse);
     }

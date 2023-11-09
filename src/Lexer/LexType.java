@@ -5,6 +5,7 @@ import Exception.*;
 import java.util.HashMap;
 
 /**
+ * Lex 类型
  * 单词类型枚举类
  *
  * @author Stevex

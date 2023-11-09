@@ -1,7 +1,4 @@
-import DataStructure.AST;
-import DataStructure.ErrorReport;
-import DataStructure.ErrorReporter;
-import DataStructure.Token;
+import DataStructure.*;
 import Lexer.*;
 import Exception.*;
 import Parser.*;
@@ -40,6 +37,8 @@ public class Compiler {
     static AST ast = new AST();
 
     public static ArrayList<Token> ast_post_root_traverse = new ArrayList<>();
+
+    public static ArrayList<SymbolTable> s_table_list = new ArrayList<>();
 
     /**
      * 是否进行错误检测
@@ -88,6 +87,11 @@ public class Compiler {
         if (error_detection){
             FileWriter writer;
             writer = new FileWriter(error_output);
+            error_list.sort((u1, u2) -> {
+                Integer age1= u1.line;
+                Integer age2= u2.line;
+                return  age1.compareTo(age2);
+            });
             for (ErrorReport token:error_list){
                 String str;
                 str = token.type.erEnumGetWord()+' '+token.line;
@@ -99,7 +103,7 @@ public class Compiler {
     }
 
     /**
-     * 主要
+     * 主函数
      *
      * @param args 参数
      */
@@ -108,7 +112,7 @@ public class Compiler {
             getSourceCodeString(source_code);
             ErrorReporter.setErrorReporter(error_detection,error_list);
             Lexer lexer = new Lexer(source_code_string,token_list);
-            Parser parser = new Parser(lexer,ast,token_list,ast_post_root_traverse);
+            Parser parser = new Parser(lexer,ast,token_list,ast_post_root_traverse,s_table_list);
 //            writeTokenList();
             writeErrorList();
         } catch (CompilerException e) {

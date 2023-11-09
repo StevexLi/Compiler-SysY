@@ -1,6 +1,7 @@
 package Parser;
 
 import DataStructure.ASTNode;
+import DataStructure.Token;
 import Lexer.LexType;
 import Exception.*;
 
@@ -15,5 +16,9 @@ public class BType extends NonTerminal {
             throw new CompilerException("2",Parser.now.line,"Btype");
         }
         Parser.lexer.next();
+    }
+
+    LexType getType() {
+        return ((Token)(_int_.getData())).type;
     }
 }

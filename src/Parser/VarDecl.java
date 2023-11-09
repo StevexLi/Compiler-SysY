@@ -23,11 +23,11 @@ public class VarDecl extends NonTerminal{
         this.nt_type = NonTerminalType.VARDECL;
         if (Parser.now.equalLexType(LexType.INTTK)){
             BType = new ASTNode(new Token(new BType()));
-            VarDef.add(new ASTNode(new Token(new VarDef())));
+            VarDef.add(new ASTNode(new Token(new VarDef(LexType.INTTK))));
             while (Parser.now.equalLexType(LexType.COMMA)) {
                 VarDef.add(new ASTNode(Parser.now));
                 Parser.lexer.next();
-                VarDef.add(new ASTNode(new Token(new VarDef())));
+                VarDef.add(new ASTNode(new Token(new VarDef(LexType.INTTK))));
             }
             if (Parser.now.equalLexType(LexType.SEMICN)){
                 SEMICN = new ASTNode(Parser.now);

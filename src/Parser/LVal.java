@@ -1,6 +1,8 @@
 package Parser;
 
 import DataStructure.ASTNode;
+import DataStructure.ErrorReporter;
+import DataStructure.ErrorType;
 import Lexer.LexType;
 import DataStructure.Token;
 import Exception.*;
@@ -28,8 +30,11 @@ public class LVal extends NonTerminal {
                 Exp_list.add(new ASTNode(new Token(new Exp())));
                 if (Parser.now.equalLexType(LexType.RBRACK))
                     Exp_list.add(new ASTNode(Parser.now));
-                else
-                    throw new CompilerException("2",Parser.now.line,"LVal");
+                else {
+//                    throw new CompilerException("2",Parser.now.line,"LVal");
+                    ErrorReporter.reportError(Parser.prev.line, ErrorType.EK); // fixme:错误处理k
+                    Exp_list.add(new ASTNode(new Token("]",LexType.RBRACK,Parser.prev.line))); // 补一个RBRACK，以保证可以正常按index取到dim的exp
+                }
                 Parser.lexer.next();
             }
             setFirstchild(Exp_list.get(0));

@@ -1,6 +1,7 @@
 package Parser;
 
 import DataStructure.ASTNode;
+import DataStructure.SymbolTable;
 import Lexer.LexType;
 import DataStructure.Token;
 import Exception.*;
@@ -19,6 +20,8 @@ public class CompUnit extends NonTerminal {
     ASTNode MainFuncDef;
     CompUnit() throws Exception {
         this.nt_type = NonTerminalType.COMPUNIT;
+        Parser.root = Parser.cur = new SymbolTable(Parser.s_table_list.size(),-1);
+        Parser.s_table_list.add(Parser.cur);
         while (Parser.now.equalLexType(LexType.INTTK) || Parser.now.equalLexType(LexType.CONSTTK) || Parser.now.equalLexType(LexType.VOIDTK)) {
             if (Parser.now.equalLexType(LexType.INTTK)) {
                 if (Parser.lexer.preRead().equalLexType(LexType.MAINTK)) {
