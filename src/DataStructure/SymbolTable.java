@@ -77,11 +77,12 @@ public class SymbolTable {
         boolean is_func = false;
         while (cur!=-1){
             symbolTable = Parser.s_table_list.get(cur);
-            if (symbolTable.block_type!=null){
-                if (symbolTable.block_type.equals(ret_type))
-                    return true;
-                else
-                    return false;
+            if (symbolTable.block_type!=null){ // !
+                if (symbolTable.block_type.equals(SymbolType.MAINFUNC)){
+                    if (ret_type.equals(SymbolType.RETINT))
+                        return true;
+                }
+                return symbolTable.block_type.equals(ret_type);
             }
             cur = symbolTable.getFatherId();
         }

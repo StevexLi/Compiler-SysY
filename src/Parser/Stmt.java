@@ -25,6 +25,8 @@ public class Stmt extends NonTerminal {
     String Stmt_type;
     ArrayList<ASTNode> Stmt_list = new ArrayList<>();
     boolean in_for = false; // 标识是否位于for循环中
+    boolean is_return = false;
+    boolean has_return_exp = true;
 
     Stmt(boolean in_for_loop) throws Exception {
         this.nt_type = NonTerminalType.STMT;
@@ -139,6 +141,7 @@ public class Stmt extends NonTerminal {
             case RETURNTK: // 'return' [Exp] ';' // 1.有Exp 2.无Exp
                 Stmt_type = "RETURN";
                 Stmt_list.add(new ASTNode(Parser.now));
+                is_return = true;
                 int return_line = Parser.now.line;
                 int return_token_line = Parser.now.line;
                 Parser.lexer.next();

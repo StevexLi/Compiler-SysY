@@ -111,6 +111,27 @@ public class Block extends NonTerminal {
                 BlockItem_list.add(new ASTNode(Parser.now));
                 Parser.lexer.next();
             }
+            int rbrace_line = Parser.prev.line;
+            ASTNode last_block_item;
+            if (FuncType.equals(SymbolType.RETINT)||FuncType.equals(SymbolType.MAINFUNC)){
+                if (BlockItem_list.size()<3){
+                    ErrorReporter.reportError(rbrace_line, ErrorType.EG); // fixme:错误处理g
+                } else {
+                    if ((last_block_item = BlockItem_list.get(BlockItem_list.size()-2))!=null) {
+                        System.out.println((Token)(last_block_item.getData()));
+                        if (((BlockItem)(((Token)last_block_item.getData()).nt)).Stmt!=null){
+                            ASTNode last_stmt = ((BlockItem)(((Token)last_block_item.getData()).nt)).Stmt;
+                            if (!((Stmt)(((Token)last_stmt.getData()).nt)).is_return){
+                                ErrorReporter.reportError(rbrace_line, ErrorType.EG); // fixme:错误处理g
+                            }
+                        } else {
+                            ErrorReporter.reportError(rbrace_line, ErrorType.EG); // fixme:错误处理g
+                        }
+                    } else {
+                        ErrorReporter.reportError(rbrace_line, ErrorType.EG); // fixme:错误处理g
+                    }
+                }
+            }
             for (int i=0;i<BlockItem_list.size();i++){
                 setFirstchild(BlockItem_list.get(i));
                 if (i+1<BlockItem_list.size()){

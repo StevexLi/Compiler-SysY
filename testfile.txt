@@ -11,7 +11,7 @@ void sa(int c, int b, int c){
     return a;
 }
 int b(int ab){
-    return;
+    // return;
 }
 int main() {
     printf("%d\%f&",1);
@@ -38,4 +38,5 @@ int main() {
         }
         int a = 2;
     }
+    return 0;
 }
