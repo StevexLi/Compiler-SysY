@@ -66,9 +66,17 @@ public class Block extends NonTerminal {
         returnToFatherTable();
     }
 
-    Block(ASTNode FuncType, ASTNode Ident, ArrayList<ASTNode> FuncFParams) throws Exception {
+    /**
+     * 函数声明块
+     *
+     * @param FuncType    函数返回值类型
+     * @param Ident       函数标识符
+     * @param FuncFParams 函数形参列表
+     * @throws Exception 例外
+     */
+    Block(SymbolType FuncType, ASTNode Ident, ArrayList<ASTNode> FuncFParams) throws Exception {
         this.nt_type = NonTerminalType.BLOCK;
-        makeTable();
+        makeTable(FuncType);
         for (ASTNode param: FuncFParams){
             ASTNode ident = ((FuncFParam)(((Token)param.getData()).nt)).getIdent();
             Token ident_token = ((Token)ident.getData());
@@ -116,6 +124,18 @@ public class Block extends NonTerminal {
     void makeTable() {
         Parser.pre = Parser.cur;
         Parser.cur = new SymbolTable(Parser.s_table_list.size(),Parser.pre.getTableId());
+        Parser.s_table_list.add(Parser.cur);
+    }
+
+    /**
+     * 建立函数块的符号表
+     *
+     * @param FuncType 函数块对应函数的返回值类型
+     */
+    void makeTable(SymbolType FuncType) {
+        Parser.pre = Parser.cur;
+        Parser.cur = new SymbolTable(Parser.s_table_list.size(),Parser.pre.getTableId());
+        Parser.cur.block_type = FuncType;
         Parser.s_table_list.add(Parser.cur);
     }
 

@@ -8,6 +8,10 @@ void sa(int c, int b, int c){
     z=1;
     y[1][2] = 2;
     x=2;
+    return a;
+}
+int b(int ab){
+    return;
 }
 int main() {
     printf("%d\%f&",1);

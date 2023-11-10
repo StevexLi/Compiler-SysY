@@ -59,7 +59,7 @@ public class FuncDef extends NonTerminal {
                     }
                 }
                 Parser.cur.addSymbol(new Symbol(Ident, SymbolType.FUNC, func_type, params_num, params));
-                Block = new ASTNode(new Token(new Block(FuncType, Ident, params)));
+                Block = new ASTNode(new Token(new Block(func_type, Ident, params)));
                 setFirstchild(FuncType);
                 FuncType.setNextSibling(Ident);
                 ASTNode node1 = new ASTNode();

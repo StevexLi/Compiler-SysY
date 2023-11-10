@@ -1,10 +1,7 @@
 package Parser;
 
-import DataStructure.ASTNode;
-import DataStructure.ErrorReporter;
-import DataStructure.ErrorType;
+import DataStructure.*;
 import Lexer.LexType;
-import DataStructure.Token;
 import Exception.*;
 
 import java.util.ArrayList;
@@ -143,10 +140,16 @@ public class Stmt extends NonTerminal {
                 Stmt_type = "RETURN";
                 Stmt_list.add(new ASTNode(Parser.now));
                 int return_line = Parser.now.line;
+                int return_token_line = Parser.now.line;
                 Parser.lexer.next();
+                SymbolType return_type = SymbolType.RETVOID;
                 if (!Parser.now.equalLexType(LexType.SEMICN)){
                     Stmt_list.add(new ASTNode(new Token(new Exp())));
                     return_line = Parser.prev.line;
+                    return_type = SymbolType.RETINT;
+                }
+                if (!Parser.cur.checkSymbolTable_return_type(return_type)){
+                    ErrorReporter.reportError(return_token_line, ErrorType.EF); // fixme:错误处理f
                 }
                 if (Parser.now.equalLexType(LexType.SEMICN)){
                     Stmt_list.add(new ASTNode(Parser.now));

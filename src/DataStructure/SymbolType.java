@@ -15,6 +15,7 @@ public enum SymbolType {
     DIM1ARRAY("dim1array","dim1array"),
     DIM2ARRAY("dim2array","dim2array"),
     FUNC("func","func"),
+    MAINFUNC("mainfunc","mainfunc"),
     ;
 
     private String word;

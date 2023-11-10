@@ -1,8 +1,11 @@
 package Parser;
 
 import DataStructure.ASTNode;
+import DataStructure.SymbolType;
 import Lexer.LexType;
 import DataStructure.Token;
+
+import java.util.ArrayList;
 
 public class MainFuncDef extends NonTerminal {
     ASTNode _int_;
@@ -28,7 +31,7 @@ public class MainFuncDef extends NonTerminal {
             RPARENT = new ASTNode(Parser.now);
             Parser.lexer.next();
         }
-        Block = new ASTNode(new Token(new Block()));
+        Block = new ASTNode(new Token(new Block(SymbolType.MAINFUNC,null, new ArrayList<>())));
         setFirstchild(_int_);
         _int_.setNextSibling(main);
         main.setNextSibling(LPARENT);

@@ -8,6 +8,7 @@ public class SymbolTable {
     public int id;
     public int father_id;
     public HashMap<String, Symbol> directory = new HashMap<String, Symbol>();
+    public SymbolType block_type;
 
     public SymbolTable(int id, int father_id) {
         this.id = id;
@@ -66,6 +67,23 @@ public class SymbolTable {
         int ident_table = checkSymbol_use_string(symbol_string);
         if (ident_table>=0){
             return Parser.s_table_list.get(ident_table).directory.get(symbol_string).is_const;
+        }
+        return false;
+    }
+
+    public boolean checkSymbolTable_return_type(SymbolType ret_type){
+        int cur = id;
+        SymbolTable symbolTable;
+        boolean is_func = false;
+        while (cur!=-1){
+            symbolTable = Parser.s_table_list.get(cur);
+            if (symbolTable.block_type!=null){
+                if (symbolTable.block_type.equals(ret_type))
+                    return true;
+                else
+                    return false;
+            }
+            cur = symbolTable.getFatherId();
         }
         return false;
     }
