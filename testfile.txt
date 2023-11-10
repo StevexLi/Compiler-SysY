@@ -1,8 +1,13 @@
 int b;
+int z;
+const int x = 1;
 void sa(int c, int b, int c){
     int a[2] = {1,2};
     int a =1;
     int a[2 = {1,2};
+    z=1;
+    y[1][2] = 2;
+    x=2;
 }
 int main() {
     printf("%d\%f&",1);

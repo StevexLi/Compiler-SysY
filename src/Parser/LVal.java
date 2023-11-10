@@ -17,10 +17,17 @@ import java.util.ArrayList;
  */
 public class LVal extends NonTerminal {
     ArrayList<ASTNode> Exp_list = new ArrayList<>();
+    int ident_table = -1;
+    ASTNode ident;
     LVal() throws Exception {
         this.nt_type = NonTerminalType.LVAL;
         if (Parser.now.isIdent()){
-            Exp_list.add(new ASTNode(Parser.now));
+            int ident_line = Parser.now.line;
+            if ((ident_table = Parser.cur.checkSymbol_use_string(Parser.now.token))==-1){
+                ErrorReporter.reportError(ident_line, ErrorType.EC); // fixme:错误处理c
+            }
+            ident = new ASTNode(Parser.now);
+            Exp_list.add(ident);
             Parser.lexer.next();
             for (int i=0;i<2;i++){
                 if (!Parser.now.equalLexType(LexType.LBRACK))
@@ -44,5 +51,17 @@ public class LVal extends NonTerminal {
                 }
             }
         }
+    }
+
+    public int getIdent_table(){
+        return ident_table;
+    }
+
+    public String getIdentString() {
+        return ((Token)ident.getData()).token;
+    }
+
+    public int getIdentLine() {
+        return ((Token)ident.getData()).line;
     }
 }

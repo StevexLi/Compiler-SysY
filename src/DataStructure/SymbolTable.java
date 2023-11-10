@@ -1,5 +1,7 @@
 package DataStructure;
 
+import Parser.Parser;
+
 import java.util.HashMap;
 
 public class SymbolTable {
@@ -38,6 +40,36 @@ public class SymbolTable {
     public boolean checkSymbol_def_string(String symbol_string){
         return directory.containsKey(symbol_string);
     }
+
+    /**
+     * 检查被使用符号是否被定义过
+     *
+     * @param symbol_string 符号字符串
+     * @return int 定义该符号的表号，若没有被定义，返回-1
+     */
+    public int checkSymbol_use_string(String symbol_string){
+        int cur = id;
+        SymbolTable symbolTable;
+        int defined_in_table_id;
+        boolean defined = false;
+        while (cur!=-1){
+            symbolTable = Parser.s_table_list.get(cur);
+            defined = symbolTable.checkSymbol_def_string(symbol_string);
+            if (defined)
+                break;
+            cur = symbolTable.getFatherId();
+        }
+        return cur;
+    }
+
+    public boolean checkSymbol_const_string(String symbol_string) {
+        int ident_table = checkSymbol_use_string(symbol_string);
+        if (ident_table>=0){
+            return Parser.s_table_list.get(ident_table).directory.get(symbol_string).is_const;
+        }
+        return false;
+    }
+
     public int checkSymbol_use(Symbol symbol){
         return 0;
     }

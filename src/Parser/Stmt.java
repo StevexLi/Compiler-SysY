@@ -233,6 +233,11 @@ public class Stmt extends NonTerminal {
                             throw new CompilerException("2",Parser.now.line, "Stmt_ident2");
                     }
                     Stmt_list.add(node2);
+                    String ident_string = ((LVal)((Token)node2.getData()).nt).getIdentString();
+                    int ident_line = ((LVal)((Token)node2.getData()).nt).getIdentLine();
+                    if (Parser.cur.checkSymbol_const_string(ident_string)){
+                        ErrorReporter.reportError(ident_line, ErrorType.EH); // fixme:错误处理h
+                    }
                     Stmt_list.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
                     if (Parser.now.equalLexType(LexType.GETINTTK)){ // LVal '=' 'getint''('')'';'    // FIRST={Ident}

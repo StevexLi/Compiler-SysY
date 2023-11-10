@@ -29,6 +29,11 @@ public class UnaryExp extends NonTerminal { //
             setFirstchild(UnaryOp);
             UnaryOp.setNextSibling(UnaryExp);
         } else if (Parser.now.equalLexType(LexType.IDENFR) && Parser.lexer.preRead().equalLexType(LexType.LPARENT)){ //  Ident '(' [FuncRParams] ')'
+            int ident_line = Parser.now.line;
+            int ident_table;
+            if ((ident_table = Parser.cur.checkSymbol_use_string(Parser.now.token))==-1){
+                ErrorReporter.reportError(ident_line, ErrorType.EC); // fixme:错误处理c
+            }
             FuncRParams.add(new ASTNode(Parser.now));
             Parser.lexer.next();
             FuncRParams.add(new ASTNode(Parser.now));
