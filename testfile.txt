@@ -38,5 +38,6 @@ int main() {
         }
         int a = 2;
     }
+    a = sa(1,2,3,a);
     return 0;
 }

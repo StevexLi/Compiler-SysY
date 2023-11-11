@@ -21,6 +21,7 @@ public class UnaryExp extends NonTerminal { //
     ArrayList<ASTNode> FuncRParams = new ArrayList<>();
     ASTNode UnaryOp;
     ASTNode UnaryExp;
+    ASTNode FuncRParamList;
     UnaryExp() throws Exception{
         this.nt_type = NonTerminalType.UNARYEXP;
         if (Parser.now.equalLexType(LexType.PLUS)||Parser.now.equalLexType(LexType.MINU)||Parser.now.equalLexType(LexType.NOT)){ // UnaryOp UnaryExp
@@ -34,22 +35,34 @@ public class UnaryExp extends NonTerminal { //
             if ((ident_table = Parser.cur.checkSymbol_use_string(Parser.now.token))==-1){
                 ErrorReporter.reportError(ident_line, ErrorType.EC); // fixme:错误处理c
             }
-            FuncRParams.add(new ASTNode(Parser.now));
+            ASTNode ident = new ASTNode(Parser.now);
+            FuncRParams.add(ident);
             Parser.lexer.next();
             FuncRParams.add(new ASTNode(Parser.now));
             Parser.lexer.next();
             if (!Parser.now.equalLexType(LexType.RPARENT)) {
-                FuncRParams.add(new ASTNode(new Token(new FuncRParams())));
+                FuncRParamList = new ASTNode(new Token(new FuncRParams()));
+                FuncRParams.add(FuncRParamList);
                 if (Parser.now.equalLexType(LexType.RPARENT)){
                     FuncRParams.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
                 } else {
 //                    throw new CompilerException("2",Parser.now.line,"UnaryExp");
                     ErrorReporter.reportError(Parser.prev.line, ErrorType.EJ); // fixme:错误处理j
+                    FuncRParams.add(new ASTNode(new Token(")",LexType.RPARENT,Parser.prev.line))); // 补一个)方便取出FuncRParams
                 }
             } else {
                 FuncRParams.add(new ASTNode(Parser.now));
                 Parser.lexer.next();
+            }
+            if (Parser.cur.checkFuncParamNum(ident, FuncRParamList)){
+                if (Parser.cur.checkFuncParamType(ident, FuncRParamList)){
+
+                } else {
+                    ErrorReporter.reportError(ident_line, ErrorType.EE); // fixme:错误处理e
+                }
+            } else {
+                ErrorReporter.reportError(ident_line, ErrorType.ED); // fixme:错误处理d
             }
             setFirstchild(FuncRParams.get(0));
             for (int i=0;i<FuncRParams.size();i++){

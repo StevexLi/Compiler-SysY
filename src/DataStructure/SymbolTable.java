@@ -1,6 +1,6 @@
 package DataStructure;
 
-import Parser.Parser;
+import Parser.*;
 
 import java.util.HashMap;
 
@@ -87,6 +87,38 @@ public class SymbolTable {
             cur = symbolTable.getFatherId();
         }
         return false;
+    }
+
+    /**
+     * 检查函数参数个数是否匹配
+     *
+     * @param ident          函数标识符
+     * @param FuncRParamList 函数实参列表
+     * @return boolean
+     */
+    public boolean checkFuncParamNum(ASTNode ident, ASTNode FuncRParamList){
+        String ident_string = ((Token)(ident.getData())).token;
+        if (!Parser.root.checkSymbol_def_string(ident_string)){ // 根本未定义
+            return false;
+        }
+        Symbol func_def = Parser.root.directory.get(ident_string);
+        if (FuncRParamList==null){
+            return func_def.param_num == 0;
+        } else {
+            FuncRParams funcRParams = (FuncRParams)((Token)FuncRParamList.getData()).nt;
+            return func_def.param_num == funcRParams.getParamNum();
+        }
+    }
+
+    /**
+     * 检查函数参数类型是否匹配
+     *
+     * @param ident          函数标识符
+     * @param FuncRParamList 函数实参列表
+     * @return boolean
+     */
+    public boolean checkFuncParamType(ASTNode ident, ASTNode FuncRParamList){
+        return true;
     }
 
     public int checkSymbol_use(Symbol symbol){

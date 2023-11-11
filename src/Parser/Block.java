@@ -118,7 +118,7 @@ public class Block extends NonTerminal {
                     ErrorReporter.reportError(rbrace_line, ErrorType.EG); // fixme:错误处理g
                 } else {
                     if ((last_block_item = BlockItem_list.get(BlockItem_list.size()-2))!=null) {
-                        System.out.println((Token)(last_block_item.getData()));
+//                        System.out.println((Token)(last_block_item.getData()));
                         if (((BlockItem)(((Token)last_block_item.getData()).nt)).Stmt!=null){
                             ASTNode last_stmt = ((BlockItem)(((Token)last_block_item.getData()).nt)).Stmt;
                             if (!((Stmt)(((Token)last_stmt.getData()).nt)).is_return){
