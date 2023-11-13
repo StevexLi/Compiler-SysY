@@ -22,20 +22,24 @@ public class UnaryExp extends NonTerminal { //
     ASTNode UnaryOp;
     ASTNode UnaryExp;
     ASTNode FuncRParamList;
+    ASTNode ident;
+    int unary_exp_type = -1;
     UnaryExp() throws Exception{
         this.nt_type = NonTerminalType.UNARYEXP;
         if (Parser.now.equalLexType(LexType.PLUS)||Parser.now.equalLexType(LexType.MINU)||Parser.now.equalLexType(LexType.NOT)){ // UnaryOp UnaryExp
+            unary_exp_type = 3;
             UnaryOp = new ASTNode(new Token(new UnaryOp()));
             UnaryExp = new ASTNode(new Token(new UnaryExp()));
             setFirstchild(UnaryOp);
             UnaryOp.setNextSibling(UnaryExp);
         } else if (Parser.now.equalLexType(LexType.IDENFR) && Parser.lexer.preRead().equalLexType(LexType.LPARENT)){ //  Ident '(' [FuncRParams] ')'
+            unary_exp_type = 2;
             int ident_line = Parser.now.line;
             int ident_table;
             if ((ident_table = Parser.cur.checkSymbol_use_string(Parser.now.token))==-1){
                 ErrorReporter.reportError(ident_line, ErrorType.EC); // fixme:错误处理c
             }
-            ASTNode ident = new ASTNode(Parser.now);
+            ident = new ASTNode(Parser.now);
             FuncRParams.add(ident);
             Parser.lexer.next();
             FuncRParams.add(new ASTNode(Parser.now));
@@ -56,11 +60,8 @@ public class UnaryExp extends NonTerminal { //
                 Parser.lexer.next();
             }
             if (Parser.cur.checkFuncParamNum(ident, FuncRParamList)){
-                if (Parser.cur.checkFuncParamType(ident, FuncRParamList)){
-
-                } else {
+                if (!Parser.cur.checkFuncParamType(ident, FuncRParamList))
                     ErrorReporter.reportError(ident_line, ErrorType.EE); // fixme:错误处理e
-                }
             } else {
                 ErrorReporter.reportError(ident_line, ErrorType.ED); // fixme:错误处理d
             }
@@ -71,8 +72,13 @@ public class UnaryExp extends NonTerminal { //
                 }
             }
         } else { // PrimaryExp
+            unary_exp_type = 1;
             PrimaryExp = new ASTNode(new Token(new PrimaryExp()));
             setFirstchild(PrimaryExp);
         }
+    }
+
+    public int getUnary_exp_type(){
+        return unary_exp_type;
     }
 }

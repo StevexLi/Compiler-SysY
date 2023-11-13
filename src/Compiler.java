@@ -94,7 +94,7 @@ public class Compiler {
             });
             for (ErrorReport token:error_list){
                 String str;
-                str = token.type.erEnumGetWord()+' '+token.line;
+                str = ((Integer)token.line).toString()+' '+token.type.erEnumGetWord();
                 writer.write(str+'\n');
             }
             writer.flush();

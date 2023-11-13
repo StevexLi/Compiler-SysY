@@ -9,6 +9,7 @@ import java.util.ArrayList;
 public class FuncRParams extends NonTerminal {
     ArrayList<ASTNode> Exp_list = new ArrayList<>();
     int param_num = 0;
+    ArrayList<ASTNode> params_exp = new ArrayList<>();
     FuncRParams() throws Exception {
         this.nt_type = NonTerminalType.FUNCRPARAMS;
         Exp_list.add(new ASTNode(new Token(new Exp())));
@@ -25,8 +26,15 @@ public class FuncRParams extends NonTerminal {
                 Exp_list.get(i).setNextSibling(Exp_list.get(i+1));
             }
         }
+        for (int i=0;i<2*param_num;i+=2){
+            params_exp.add(Exp_list.get(i));
+        }
     }
     public int getParamNum(){
         return param_num;
+    }
+
+    public ArrayList<ASTNode> getParamsExp(){
+        return params_exp;
     }
 }

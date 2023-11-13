@@ -1,5 +1,7 @@
 package DataStructure;
 
+import Parser.NonTerminalType;
+
 public class ASTNode { //孩子兄弟结点cstree
     private Object data; //结点的数据域
     private ASTNode firstchild,nextsibling;  //左孩子，右兄弟
@@ -36,5 +38,18 @@ public class ASTNode { //孩子兄弟结点cstree
     public void setNextSibling(ASTNode nextsibling){
         if (data!=null)
             this.nextsibling=nextsibling;
+    }
+
+    public boolean isNonTerminalNode(NonTerminalType nonTerminalType){
+        if (((Token)data).nt!=null){
+            return ((Token) data).nt.nt_type.equals(nonTerminalType);
+        }
+        return false;
+    }
+
+    public Token getDataToken(){
+        if (data!=null)
+            return (Token)data;
+        return null;
     }
 }

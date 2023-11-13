@@ -1,6 +1,10 @@
 int b;
 int z;
 const int x = 1;
+int funca(int faa,int fab[]){
+
+    return 1;
+}
 void sa(int c, int b, int c){
     int a[2] = {1,2};
     int a =1;
@@ -14,6 +18,8 @@ int b(int ab){
     // return;
 }
 int main() {
+    int forfunca[2][1]={{1},{2}};
+    funca(funca(1,forfunca[2]),forfunca[2]);
     printf("%d\%f&",1);
     printf("\n");
     printf("%f");

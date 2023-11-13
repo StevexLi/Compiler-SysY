@@ -3,6 +3,7 @@ package DataStructure;
 import Lexer.LexType;
 import Parser.NonTerminal;
 import Parser.Parser;
+import Parser.FuncFParam;
 
 import java.util.ArrayList;
 
@@ -105,7 +106,7 @@ public class Symbol {
     /**
      * 函数形参定义
      *
-     * @param token_node 代币节点
+     * @param token_node ASTNode类型Ident节点
      * @param symbolType 符号类型
      * @param value_type 值类型
      * @param dim2       DIM2
@@ -127,11 +128,11 @@ public class Symbol {
     /**
      * 函数符号声明
      *
-     * @param token_node  代币节点
+     * @param token_node  ASTNode类型Ident节点
      * @param symbolType  符号类型
-     * @param retType     RET类型
-     * @param paramNum    参数 num
-     * @param FuncFParams func fparams 函数
+     * @param retType     返回值类型
+     * @param paramNum    参数个数
+     * @param FuncFParams 形参列表
      */
     public Symbol(ASTNode token_node, SymbolType symbolType, SymbolType retType, int paramNum, ArrayList<ASTNode> FuncFParams) {
         this.id = ++Symbol.total_symbol;
@@ -142,7 +143,20 @@ public class Symbol {
         this.ret_type = retType;
         this.param_num = paramNum;
         this.param_exp_list = FuncFParams;
-        // TODO: TRANSLATE FUNCFPARAMS INTO param_type_list!
+        for (ASTNode param : this.param_exp_list){
+            int dim = ((FuncFParam)(((Token)param.getData()).nt)).getDim();
+            switch (dim){
+                case 0: // 普通变量
+                    this.param_type_list.add(SymbolType.VAR);
+                    break;
+                case 1: // 一维数组
+                    this.param_type_list.add(SymbolType.DIM1ARRAY);
+                    break;
+                case 2: // 二维数组
+                    this.param_type_list.add(SymbolType.DIM2ARRAY);
+                    break;
+            }
+        }
     }
 
     /**

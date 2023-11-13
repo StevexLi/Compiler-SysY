@@ -19,6 +19,7 @@ public class LVal extends NonTerminal {
     ArrayList<ASTNode> Exp_list = new ArrayList<>();
     int ident_table = -1;
     ASTNode ident;
+    int brackets_num = 0;
     LVal() throws Exception {
         this.nt_type = NonTerminalType.LVAL;
         if (Parser.now.isIdent()){
@@ -43,6 +44,7 @@ public class LVal extends NonTerminal {
                     Exp_list.add(new ASTNode(new Token("]",LexType.RBRACK,Parser.prev.line))); // 补一个RBRACK，以保证可以正常按index取到dim的exp
                 }
                 Parser.lexer.next();
+                brackets_num++;
             }
             setFirstchild(Exp_list.get(0));
             for (int i=0;i<Exp_list.size();i++){
@@ -63,5 +65,9 @@ public class LVal extends NonTerminal {
 
     public int getIdentLine() {
         return ((Token)ident.getData()).line;
+    }
+
+    public int getBrackets_num(){
+        return brackets_num;
     }
 }

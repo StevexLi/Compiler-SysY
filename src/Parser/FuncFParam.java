@@ -82,7 +82,7 @@ public class FuncFParam extends NonTerminal {
         return ((BType)((Token)BType.getData()).nt).getType();
     }
 
-    int getDim() {
+    public int getDim() {
         return dim;
     }
 
