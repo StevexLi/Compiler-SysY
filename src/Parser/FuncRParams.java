@@ -12,6 +12,8 @@ public class FuncRParams extends NonTerminal {
     ArrayList<ASTNode> params_exp = new ArrayList<>();
     FuncRParams() throws Exception {
         this.nt_type = NonTerminalType.FUNCRPARAMS;
+        if (Parser.now.equalLexType(LexType.SEMICN))
+            return;
         Exp_list.add(new ASTNode(new Token(new Exp())));
         param_num++;
         while(Parser.now.equalLexType(LexType.COMMA)){

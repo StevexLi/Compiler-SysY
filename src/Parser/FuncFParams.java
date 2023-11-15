@@ -11,6 +11,8 @@ public class FuncFParams extends NonTerminal {
     int params_num = 0;
     FuncFParams() throws Exception {
         this.nt_type = NonTerminalType.FUNCFPARAMS;
+        if (Parser.now.type.equals(LexType.LBRACE))
+            return;
         FuncFParam_list.add(new ASTNode(new Token(new FuncFParam())));
         params_num++;
         while (Parser.now.equalLexType(LexType.COMMA)){
