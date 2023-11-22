@@ -23,19 +23,37 @@ import java.util.ArrayList;
  */
 public class Stmt extends NonTerminal {
     String Stmt_type;
+    StmtType stmt_type;
     ArrayList<ASTNode> Stmt_list = new ArrayList<>();
     boolean in_for = false; // 标识是否位于for循环中
+    SymbolType return_type;
     boolean is_return = false;
     boolean has_return_exp = true;
+    Exp return_exp;
+
+    public enum StmtType {
+        LVALASSIGNEXP,
+        EXP,
+        BLOCK,
+        IF,
+        FOR,
+        BREAK,
+        CONTINUE,
+        RETURN,
+        LVALASSIGNGETINT,
+        PRINTF
+    }
 
     Stmt(boolean in_for_loop) throws Exception {
         this.nt_type = NonTerminalType.STMT;
         this.in_for = in_for_loop;
         switch (Parser.now.type){
             case LBRACE: // Block
+                stmt_type = StmtType.BLOCK;
                 Stmt_list.add(new ASTNode(new Token(new Block(in_for))));
                 break;
             case IFTK: // 'if' '(' Cond ')' Stmt [ 'else' Stmt ] // 1.有else 2.无else
+                stmt_type = StmtType.IF;
                 Stmt_list.add(new ASTNode(Parser.now));
                 Parser.lexer.next();
                 if (Parser.now.equalLexType(LexType.LPARENT)){
@@ -66,6 +84,7 @@ public class Stmt extends NonTerminal {
                 }
                 break;
             case FORTK: // 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt // 1. 无缺省 2. 缺省第一个ForStmt 3. 缺省Cond 4. 缺省第二个ForStmt
+                stmt_type = StmtType.FOR;
                 Stmt_list.add(new ASTNode(Parser.now));
                 Parser.lexer.next();
                 if (Parser.now.equalLexType(LexType.LPARENT)){
@@ -107,6 +126,7 @@ public class Stmt extends NonTerminal {
                 }
                 break;
             case BREAKTK: //  'break' ';'
+                stmt_type = StmtType.BREAK;
                 Stmt_type = "BREAK";
                 Stmt_list.add(new ASTNode(Parser.now));
                 int break_line = Parser.now.line;
@@ -123,6 +143,7 @@ public class Stmt extends NonTerminal {
                 }
                 break;
             case CONTINUETK: // 'continue' ';'
+                stmt_type = StmtType.CONTINUE;
                 Stmt_type = "CONTINUE";
                 Stmt_list.add(new ASTNode(Parser.now));
                 int continue_line = Parser.now.line;
@@ -139,15 +160,17 @@ public class Stmt extends NonTerminal {
                 }
                 break;
             case RETURNTK: // 'return' [Exp] ';' // 1.有Exp 2.无Exp
+                stmt_type = StmtType.RETURN;
                 Stmt_type = "RETURN";
                 Stmt_list.add(new ASTNode(Parser.now));
                 is_return = true;
                 int return_line = Parser.now.line;
                 int return_token_line = Parser.now.line;
                 Parser.lexer.next();
-                SymbolType return_type = SymbolType.RETVOID;
+                return_type = SymbolType.RETVOID;
                 if (!Parser.now.equalLexType(LexType.SEMICN)){
-                    Stmt_list.add(new ASTNode(new Token(new Exp())));
+                    return_exp = new Exp();
+                    Stmt_list.add(new ASTNode(new Token(return_exp)));
                     return_line = Parser.prev.line;
                     return_type = SymbolType.RETINT;
                 }
@@ -163,6 +186,7 @@ public class Stmt extends NonTerminal {
                 }
                 break;
             case PRINTFTK: // 'printf''('FormatString{','Exp}')'';' // 1.有Exp 2.无Exp
+                stmt_type = StmtType.PRINTF;
                 Stmt_type = "PRINTF";
                 Stmt_list.add(new ASTNode(Parser.now));
                 int printf_line = Parser.now.line;
@@ -214,6 +238,7 @@ public class Stmt extends NonTerminal {
             case MINU:
             case NOT:
             case SEMICN: // [Exp] ';' // FIRST={(,Number,Ident,+,-,!}
+                stmt_type = StmtType.EXP;
                 if (!Parser.now.equalLexType(LexType.SEMICN)){
                     Stmt_list.add(new ASTNode(new Token(new Exp())));
                 }
@@ -228,6 +253,7 @@ public class Stmt extends NonTerminal {
             case IDENFR: //  Stmt → LVal '=' Exp ';'    // FIRST={Ident} LVal '=' 'getint''('')'';'    // FIRST={Ident} | [Exp] ';'     // FIRST={(,Number,Ident,+,-,!}
                 ASTNode node1 = new ASTNode(new Token(new Exp()));
                 if (Parser.now.equalLexType(LexType.SEMICN)){ // [Exp] ';'     // FIRST={(,Number,Ident,+,-,!}
+                    stmt_type = StmtType.EXP;
                     Stmt_list.add(node1);
                     Stmt_list.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
@@ -247,6 +273,7 @@ public class Stmt extends NonTerminal {
                     Stmt_list.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
                     if (Parser.now.equalLexType(LexType.GETINTTK)){ // LVal '=' 'getint''('')'';'    // FIRST={Ident}
+                        stmt_type = StmtType.LVALASSIGNGETINT;
                         Stmt_list.add(new ASTNode(Parser.now)); // getint
                         Parser.lexer.next();
                         if (Parser.now.equalLexType(LexType.LPARENT)){
@@ -272,6 +299,7 @@ public class Stmt extends NonTerminal {
                             }
                         }
                     } else { // LVal '=' Exp ';'    // FIRST={Ident}
+                        stmt_type = StmtType.LVALASSIGNEXP;
                         Stmt_list.add(new ASTNode(new Token(new Exp())));
                         if (Parser.now.equalLexType(LexType.SEMICN)){
                             Stmt_list.add(new ASTNode(Parser.now));
@@ -295,5 +323,13 @@ public class Stmt extends NonTerminal {
             if (i+1<Stmt_list.size())
                 node1.setNextSibling(Stmt_list.get(i+1));
         }
+    }
+
+    public StmtType getStmt_type() {
+        return stmt_type;
+    }
+
+    public Exp getReturn_exp() {
+        return return_exp;
     }
 }

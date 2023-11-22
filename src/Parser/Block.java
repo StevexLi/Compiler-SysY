@@ -142,6 +142,15 @@ public class Block extends NonTerminal {
         returnToFatherTable();
     }
 
+    public ArrayList<BlockItem> getBlockItem() {
+        ArrayList<BlockItem> blockItems = new ArrayList<>();
+        for (ASTNode item : BlockItem_list){
+            if (!item.getDataToken().equalLexType(LexType.LBRACE) && !item.getDataToken().equalLexType(LexType.RBRACE))
+                blockItems.add((BlockItem) item.getDataToken().nt);
+        }
+        return blockItems;
+    }
+
     void makeTable() {
         Parser.pre = Parser.cur;
         Parser.cur = new SymbolTable(Parser.s_table_list.size(),Parser.pre.getTableId());

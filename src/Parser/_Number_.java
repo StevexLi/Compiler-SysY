@@ -14,4 +14,8 @@ public class _Number_ extends NonTerminal {
             Parser.lexer.next();
         }
     }
+
+    public int getValue() {
+        return value;
+    }
 }

@@ -1,2 +1,8 @@
 词法分析
 lexer未考虑单独一个'\'的情况，已在语法分析中修正
+
+错误处理
+错误处理未考虑MainFuncDef中缺少小括号的情况，已在代码生成1中修正
+
+代码生成1
+在LLVMGenerator中改变了buildReturn的的tmp_value的IRType，改为i32，原先是null

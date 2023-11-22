@@ -81,4 +81,24 @@ public class UnaryExp extends NonTerminal { //
     public int getUnary_exp_type(){
         return unary_exp_type;
     }
+
+    public PrimaryExp getPrimaryExp() {
+        if (PrimaryExp==null)
+            return null;
+        return (PrimaryExp) (this.PrimaryExp.getDataToken().nt);
+    }
+
+    public UnaryOp getUnaryOp() {
+        if (UnaryOp==null)
+            return null;
+        return (UnaryOp) (UnaryOp.getDataToken().nt);
+    }
+
+    public UnaryExp getUnaryExp() {
+        if (UnaryExp==null)
+            return null;
+        return (UnaryExp) (UnaryExp.getDataToken().nt);
+    }
+
+
 }

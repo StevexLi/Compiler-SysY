@@ -51,4 +51,22 @@ public class PrimaryExp extends NonTerminal {
     public int getPrimary_exp_type(){
         return primary_exp_type;
     }
+
+    public _Number_ getNumber() {
+        if (Number==null)
+            return null;
+        return (_Number_) (this.Number.getDataToken().nt);
+    }
+
+    public Exp getExp() {
+        if (Exp.isEmpty())
+            return null;
+        return (Exp) Exp.get(1).getDataToken().nt;
+    }
+
+    public LVal getLVal() {
+        if (LVal==null)
+            return null;
+        return (LVal) LVal.getDataToken().nt;
+    }
 }

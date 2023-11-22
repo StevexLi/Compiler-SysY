@@ -18,6 +18,7 @@ public class CompUnit extends NonTerminal {
     ArrayList<ASTNode> Decl = new ArrayList<>();
     ArrayList<ASTNode> FuncDef = new ArrayList<>();
     ASTNode MainFuncDef;
+    MainFuncDef mfd;
     CompUnit() throws Exception {
         this.nt_type = NonTerminalType.COMPUNIT;
         Parser.root = Parser.cur = new SymbolTable(Parser.s_table_list.size(),-1);
@@ -25,7 +26,8 @@ public class CompUnit extends NonTerminal {
         while (Parser.now.equalLexType(LexType.INTTK) || Parser.now.equalLexType(LexType.CONSTTK) || Parser.now.equalLexType(LexType.VOIDTK)) {
             if (Parser.now.equalLexType(LexType.INTTK)) {
                 if (Parser.lexer.preRead().equalLexType(LexType.MAINTK)) {
-                    MainFuncDef = new ASTNode(new Token(new MainFuncDef()));
+                    mfd = new MainFuncDef();
+                    MainFuncDef = new ASTNode(new Token(mfd));
                 } else if (Parser.lexer.preRead().isIdent()) {
                     if (Parser.lexer.prepreRead().equalLexType(LexType.ASSIGN)||Parser.lexer.prepreRead().equalLexType(LexType.LBRACK)||Parser.lexer.prepreRead().equalLexType(LexType.SEMICN)||Parser.lexer.prepreRead().equalLexType(LexType.COMMA)) {
                         Decl.add(new ASTNode(new Token(new Decl())));
@@ -76,5 +78,9 @@ public class CompUnit extends NonTerminal {
             setFirstchild(MainFuncDef);
             node0.setNextSibling(MainFuncDef);
 //        }
+    }
+
+    public MainFuncDef getMainFuncDef() {
+        return mfd;
     }
 }

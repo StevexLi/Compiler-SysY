@@ -15,7 +15,7 @@ public class Parser {
     public static Token pre_read;
     public static Token prepre_read;
     public static AST ast;
-    public static ASTNode CompUnit;
+    public static  CompUnit CompUnit;
     ArrayList<Token> token_list;
     ArrayList<Token> ast_post_root_traverse;
     public static ArrayList<SymbolTable> s_table_list = new ArrayList<>();
@@ -35,6 +35,11 @@ public class Parser {
 
     void syntaxAnalysis() throws Exception {
         lexer.next();
-        ast.setRoot(new ASTNode(new Token(new CompUnit())));
+        CompUnit = new CompUnit();
+        ast.setRoot(new ASTNode(new Token(Parser.CompUnit)));
+    }
+
+    public CompUnit getCompUnit() {
+        return CompUnit;
     }
 }

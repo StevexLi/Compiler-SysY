@@ -63,4 +63,12 @@ public class AddExp extends NonTerminal {
             MulExp.get(1).setNextSibling(MulExp.get(2));
         }
     }
+
+    public ArrayList<Token> getMulExp_list() {
+        ArrayList<Token> list = new ArrayList<>();
+        for (ASTNode node : MulExp_list){
+            list.add(node.getDataToken());
+        }
+        return list;
+    }
 }

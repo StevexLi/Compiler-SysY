@@ -1,4 +1,6 @@
 import DataStructure.*;
+import Ir.IRModule;
+import Ir.LLVMGenerator;
 import Lexer.*;
 import Exception.*;
 import Parser.*;
@@ -43,7 +45,7 @@ public class Compiler {
     /**
      * 是否进行错误检测
      */
-    public static boolean error_detection = true;
+    public static boolean error_detection = false;
     /**
      * 错误输出文件
      */
@@ -52,6 +54,11 @@ public class Compiler {
      * 错误列表
      */
     public static ArrayList<ErrorReport> error_list = new ArrayList<>();
+    /**
+     * LLVM 输出路径
+     */
+    static String llvm_output = "llvm_ir.txt";
+    static String llvm_code;
 
     /**
      * @param source_code 源代码文件路径
@@ -63,7 +70,7 @@ public class Compiler {
     }
 
     /**
-     * 输出语法分析后的token列表
+     * 输出语法分析后的token列表（后序遍历语法树得出）
      *
      * @throws IOException IO异常
      */
@@ -88,9 +95,9 @@ public class Compiler {
             FileWriter writer;
             writer = new FileWriter(error_output);
             error_list.sort((u1, u2) -> {
-                Integer age1= u1.line;
-                Integer age2= u2.line;
-                return  age1.compareTo(age2);
+                Integer a1= u1.line;
+                Integer a2= u2.line;
+                return  a1.compareTo(a2);
             });
             for (ErrorReport token:error_list){
                 String str;
@@ -100,6 +107,14 @@ public class Compiler {
             writer.flush();
             writer.close();
         }
+    }
+
+    static void writeLLVMCode() throws IOException {
+        FileWriter writer;
+        writer = new FileWriter(llvm_output);
+        writer.write(llvm_code);
+        writer.flush();
+        writer.close();
     }
 
     /**
@@ -114,7 +129,11 @@ public class Compiler {
             Lexer lexer = new Lexer(source_code_string,token_list);
             Parser parser = new Parser(lexer,ast,token_list,ast_post_root_traverse,s_table_list);
 //            writeTokenList();
-            writeErrorList();
+//            writeErrorList();
+            LLVMGenerator.getInstance().visitCompUnit(parser.getCompUnit());
+            llvm_code = IRModule.getInstance().toString();
+            writeLLVMCode();
+
         } catch (CompilerException e) {
             if (!e.getType().equals("0")){
                 System.out.println("Exception.CompilerException:"+e.getType()+' '+e.getLine()+' '+e.getMessage());

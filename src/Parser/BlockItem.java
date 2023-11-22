@@ -25,4 +25,16 @@ public class BlockItem extends NonTerminal {
             setFirstchild(Stmt);
         }
     }
+
+    public Decl getDecl() {
+        if (Decl==null)
+            return null;
+        return ((Decl)(this.Decl.getDataToken().nt));
+    }
+
+    public Stmt getStmt() {
+        if (Stmt==null)
+            return null;
+        return ((Stmt)(this.Stmt.getDataToken().nt));
+    }
 }
