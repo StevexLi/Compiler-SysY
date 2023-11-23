@@ -17,4 +17,16 @@ public class Decl extends NonTerminal {
         setFirstchild(ConstDecl);
         setFirstchild(VarDecl);
     }
+
+    public ConstDecl getConstDecl() {
+        if (ConstDecl==null)
+            return null;
+        return (ConstDecl) ConstDecl.getDataToken().nt;
+    }
+
+    public VarDecl getVarDecl() {
+        if (VarDecl==null)
+            return null;
+        return (VarDecl) VarDecl.getDataToken().nt;
+    }
 }

@@ -17,6 +17,7 @@ public class VarDef extends NonTerminal {
     ArrayList<ASTNode> ConstExp = new ArrayList<>();
     ASTNode ASSIGN;
     ASTNode InitVal;
+    int dim = 0;
     VarDef(LexType value_type) throws Exception {
         this.nt_type = NonTerminalType.VARDEF;
         if (Parser.now.isIdent()) {
@@ -27,7 +28,7 @@ public class VarDef extends NonTerminal {
                 ErrorReporter.reportError(ident_line, ErrorType.EB); // fixme:错误处理b
             }
             Parser.lexer.next();
-            int dim = 0;
+            dim = 0;
             for (int i=0;i<2;i++) { // 普通变量、一维数组、二维数组
                 if (!Parser.now.equalLexType(LexType.LBRACK))
                     break;
@@ -83,5 +84,19 @@ public class VarDef extends NonTerminal {
         } else {
             throw new CompilerException("2",Parser.now.line,"VarDef");
         }
+    }
+
+    public String getIdentName() {
+        return Ident.getDataToken().token;
+    }
+
+    public int getDim() {
+        return dim;
+    }
+
+    public InitVal getInitVal() {
+        if (InitVal==null)
+            return null;
+        return (InitVal) InitVal.getDataToken().nt;
     }
 }

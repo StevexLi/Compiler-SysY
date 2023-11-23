@@ -17,6 +17,7 @@ public class ConstDef extends NonTerminal {
     ArrayList<ASTNode> ConstExp = new ArrayList<>();
     ASTNode ASSIGN;
     ASTNode ConstInitVal;
+    int dim = 0;
     ConstDef(LexType value_type) throws Exception {
         this.nt_type = NonTerminalType.CONSTDEF;
         if (Parser.now.isIdent()) {
@@ -27,7 +28,7 @@ public class ConstDef extends NonTerminal {
                 ErrorReporter.reportError(ident_line, ErrorType.EB); // fixme:错误处理b
             }
             Parser.lexer.next();
-            int dim = 0;
+            dim = 0;
             for (int i=0;i<2;i++) { // 普通变量、一维数组、二维数组
                 if (Parser.now.equalLexType(LexType.ASSIGN))
                     break;
@@ -83,5 +84,17 @@ public class ConstDef extends NonTerminal {
         }
         node0.setNextSibling(ASSIGN);
         ASSIGN.setNextSibling(ConstInitVal);
+    }
+
+    public String getIdentName() {
+        return Ident.getDataToken().token;
+    }
+
+    public int getDim() {
+        return dim;
+    }
+
+    public ConstInitVal getConstInitVal() {
+        return (ConstInitVal) ConstInitVal.getDataToken().nt;
     }
 }

@@ -21,7 +21,11 @@ public class BinaryIns extends Instruction {
         } else {
             addOperands(left, right);
         }
-
+        this.setType(this.getOperands().get(0).getType());
+//        if (isCond()) {
+//            this.setType(IntegerType.i1);
+//        } TODO:是条件表达式
+        this.setName("%" + reg_num++);
     }
 
     private void addOperands(Value left, Value right) {

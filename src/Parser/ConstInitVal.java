@@ -51,4 +51,10 @@ public class ConstInitVal extends NonTerminal {
             }
         }
     }
+
+    public ConstExp getConstExp() {
+        if (ConstExp==null)
+            return null;
+        return (ConstExp) ConstExp.getDataToken().nt;
+    }
 }

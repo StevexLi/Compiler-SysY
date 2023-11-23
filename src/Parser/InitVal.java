@@ -49,4 +49,10 @@ public class InitVal extends NonTerminal {
             }
         }
     }
+
+    public Exp getExp() {
+        if (Exp==null)
+            return null;
+        return (Exp) Exp.getDataToken().nt;
+    }
 }

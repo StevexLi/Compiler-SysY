@@ -80,6 +80,13 @@ public class CompUnit extends NonTerminal {
 //        }
     }
 
+    public ArrayList<Decl> getDecl() {
+        ArrayList<Decl> decl_list = new ArrayList<>();
+        for (ASTNode node : Decl) {
+            decl_list.add((Decl) node.getDataToken().nt);
+        }
+        return decl_list;
+    }
     public MainFuncDef getMainFuncDef() {
         return mfd;
     }

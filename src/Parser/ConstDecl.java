@@ -13,6 +13,7 @@ public class ConstDecl extends NonTerminal {
     ASTNode _const_;
     ASTNode BType;
     ArrayList<ASTNode> ConstDef = new ArrayList<>();
+    ArrayList<ConstDef> ConstDefList = new ArrayList<>();
     ASTNode SEMICN;
     ConstDecl() throws Exception { // 常量声明 ConstDecl → 'const' BType ConstDef { ',' ConstDef } ';' // 1.花括号内重复0次 2.花括号内重复多次
         this.nt_type = NonTerminalType.CONSTDECL;
@@ -21,11 +22,15 @@ public class ConstDecl extends NonTerminal {
             if (Parser.lexer.preRead().equalLexType(LexType.INTTK)){
                 Parser.lexer.next();
                 BType = new ASTNode(new Token(new BType()));
-                ConstDef.add(new ASTNode(new Token(new ConstDef(LexType.INTTK))));
+                ConstDef node = new ConstDef(LexType.INTTK);
+                ConstDefList.add(node);
+                ConstDef.add(new ASTNode(new Token(node)));
                 while (Parser.now.equalLexType(LexType.COMMA)) {
                     ConstDef.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
-                    ConstDef.add(new ASTNode(new Token(new ConstDef(LexType.INTTK))));
+                    node = new ConstDef(LexType.INTTK);
+                    ConstDefList.add(node);
+                    ConstDef.add(new ASTNode(new Token(node)));
                 }
                 if (Parser.now.equalLexType(LexType.SEMICN)){
                     SEMICN = new ASTNode(Parser.now);
@@ -52,5 +57,13 @@ public class ConstDecl extends NonTerminal {
             node0 = node1;
         }
         node0.setNextSibling(SEMICN);
+    }
+
+    public LexType getBType() {
+        return ((BType) BType.getDataToken().nt).getType();
+    }
+
+    public ArrayList<ConstDef> getConstDefList() {
+        return ConstDefList;
     }
 }

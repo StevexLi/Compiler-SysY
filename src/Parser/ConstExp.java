@@ -10,4 +10,8 @@ public class ConstExp extends NonTerminal {
         AddExp = new ASTNode(new Token(new AddExp()));
         setFirstchild(AddExp);
     }
+
+    public AddExp getAddExp() {
+        return (AddExp) AddExp.getDataToken().nt ;
+    }
 }

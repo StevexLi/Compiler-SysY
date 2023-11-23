@@ -17,6 +17,6 @@ public class ConstInt extends Const {
 
     @Override
     public String toString() {
-        return "i32" + this.value;
+        return "i32 " + this.value;
     }
 }

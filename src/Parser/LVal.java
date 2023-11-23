@@ -20,6 +20,7 @@ public class LVal extends NonTerminal {
     int ident_table = -1;
     ASTNode ident;
     int brackets_num = 0;
+    ArrayList<Exp> Exps = new ArrayList<>();
     LVal() throws Exception {
         this.nt_type = NonTerminalType.LVAL;
         if (Parser.now.isIdent()){
@@ -35,7 +36,9 @@ public class LVal extends NonTerminal {
                     break;
                 Exp_list.add(new ASTNode(Parser.now));
                 Parser.lexer.next();
-                Exp_list.add(new ASTNode(new Token(new Exp())));
+                Exp exp = new Exp();
+                Exps.add(exp);
+                Exp_list.add(new ASTNode(new Token(exp)));
                 if (Parser.now.equalLexType(LexType.RBRACK))
                     Exp_list.add(new ASTNode(Parser.now));
                 else {
@@ -69,5 +72,9 @@ public class LVal extends NonTerminal {
 
     public int getBrackets_num(){
         return brackets_num;
+    }
+
+    public ArrayList<Exp> getExps() {
+        return Exps;
     }
 }

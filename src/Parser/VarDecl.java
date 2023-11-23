@@ -18,16 +18,21 @@ import java.util.ArrayList;
 public class VarDecl extends NonTerminal{
     ASTNode BType;
     ArrayList<ASTNode> VarDef = new ArrayList<>();
+    ArrayList<VarDef> VarDefList = new ArrayList<>();
     ASTNode SEMICN;
     VarDecl() throws Exception {
         this.nt_type = NonTerminalType.VARDECL;
         if (Parser.now.equalLexType(LexType.INTTK)){
             BType = new ASTNode(new Token(new BType()));
-            VarDef.add(new ASTNode(new Token(new VarDef(LexType.INTTK))));
+            VarDef node = new VarDef(LexType.INTTK);
+            VarDefList.add(node);
+            VarDef.add(new ASTNode(new Token(node)));
             while (Parser.now.equalLexType(LexType.COMMA)) {
                 VarDef.add(new ASTNode(Parser.now));
                 Parser.lexer.next();
-                VarDef.add(new ASTNode(new Token(new VarDef(LexType.INTTK))));
+                node = new VarDef(LexType.INTTK);
+                VarDefList.add(node);
+                VarDef.add(new ASTNode(new Token(node)));
             }
             if (Parser.now.equalLexType(LexType.SEMICN)){
                 SEMICN = new ASTNode(Parser.now);
@@ -50,5 +55,13 @@ public class VarDecl extends NonTerminal{
             node0 = node1;
         }
         node0.setNextSibling(SEMICN);
+    }
+
+    public LexType getBType() {
+        return ((BType) BType.getDataToken().nt).getType();
+    }
+
+    public ArrayList<VarDef> getVarDefList() {
+        return VarDefList;
     }
 }

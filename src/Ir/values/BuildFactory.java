@@ -3,10 +3,7 @@ package Ir.values;
 import Ir.types.FunctionType;
 import Ir.types.IRType;
 import Ir.types.IntegerType;
-import Ir.values.instructions.BinaryIns;
-import Ir.values.instructions.BrIns;
-import Ir.values.instructions.IROp;
-import Ir.values.instructions.RetIns;
+import Ir.values.instructions.*;
 
 import java.util.ArrayList;
 
@@ -24,6 +21,38 @@ public class BuildFactory {
     public ConstInt getConstInt(int num) {
         return new ConstInt(num);
     }
+
+
+    /**
+     * 变量相关构造
+     */
+    public GlobalVar buildGlobalVar(String name, IRType type, boolean is_const, Value value) {
+        return new GlobalVar(name, type, is_const, value);
+    }
+    public AllocaIns buildVar(BasicBlock block, Value value, boolean is_const, IRType type) {
+        AllocaIns ins = new AllocaIns(block, is_const, type);
+        ins.addInsToBlock(block);
+        if (value!=null){ // 有初始值
+            buildStore(block, ins, value);
+        }
+        return ins;
+    }
+
+
+    public StoreIns buildStore(BasicBlock block, Value pointer, Value value) {
+        StoreIns ins = new StoreIns(block, pointer, value);
+        ins.addInsToBlock(block);
+        return ins;
+    }
+
+    public LoadIns buildLoad(BasicBlock block, Value pointer) {
+        LoadIns ins = new LoadIns(block, pointer);
+        ins.addInsToBlock(block);
+        return ins;
+    }
+
+
+
 
 
     /**
