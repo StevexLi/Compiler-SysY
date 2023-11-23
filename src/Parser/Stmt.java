@@ -32,6 +32,8 @@ public class Stmt extends NonTerminal {
     LVal lval;
     Exp exp_single;
     Block block;
+    Token format_string_token;
+    ArrayList<Exp> printf_exp_list = new ArrayList<>();
 
     public enum StmtType {
         LVALASSIGNEXP,
@@ -199,12 +201,15 @@ public class Stmt extends NonTerminal {
                     Parser.lexer.next();
                     int d = Parser.now.value; // FormatString里%d的个数
                     int real_d = 0; // printf里参数个数
+                    format_string_token = Parser.now;
                     Stmt_list.add(new ASTNode(Parser.now)); // FormatString
                     Parser.lexer.next();
                     while (Parser.now.equalLexType(LexType.COMMA)){
                         Stmt_list.add(new ASTNode(Parser.now));
                         Parser.lexer.next();
-                        Stmt_list.add(new ASTNode(new Token(new Exp())));
+                        Exp e = new Exp();
+                        printf_exp_list.add(e);
+                        Stmt_list.add(new ASTNode(new Token(e)));
                         real_d++;
                     }
                     if (d!=real_d){
@@ -348,5 +353,13 @@ public class Stmt extends NonTerminal {
 
     public Block getBlock() {
         return block;
+    }
+
+    public Token getFormat_string_token() {
+        return format_string_token;
+    }
+
+    public ArrayList<Exp> getPrintf_exp_list() {
+        return printf_exp_list;
     }
 }

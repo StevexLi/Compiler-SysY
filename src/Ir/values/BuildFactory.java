@@ -51,6 +51,12 @@ public class BuildFactory {
         return ins;
     }
 
+    public CallIns buildCall(BasicBlock block, Function func, ArrayList<Value> args) {
+        CallIns ins = new CallIns(block, func, args);
+        ins.addInsToBlock(block);
+        return ins;
+    }
+
 
 
 

@@ -17,6 +17,7 @@ public class LLVMGenerator {
         return instance;
     }
     private static BuildFactory build_factory = BuildFactory.getInstance();
+    private boolean char_to_string = false;
 
     private boolean is_global = true;
     private boolean is_const = false;
@@ -25,6 +26,7 @@ public class LLVMGenerator {
     private boolean is_reg = false;
     private ArrayList<IRType> func_type_list;
     private ArrayList<Value> func_args_list;
+    private ArrayList<Value> func_rparam_list;
     private int tmp_index = 0;
     private BasicBlock cur_block;
 
@@ -114,7 +116,7 @@ public class LLVMGenerator {
         makeSymbolAndConstTable(); // 最顶层的符号和常量表
         addSymbol("getint", build_factory.buildLibraryFunction("getint", IntegerType.i32, new ArrayList<>()));
         addSymbol("putint", build_factory.buildLibraryFunction("putint", VoidType.voidType, new ArrayList<>(Collections.singletonList(IntegerType.i32)))); // 创造一个不可变列表
-        addSymbol("putchar", build_factory.buildLibraryFunction("putchar", VoidType.voidType, new ArrayList<>(Collections.singletonList(IntegerType.i32)))); // 创造一个不可变列表
+        addSymbol("putch", build_factory.buildLibraryFunction("putch", VoidType.voidType, new ArrayList<>(Collections.singletonList(IntegerType.i32)))); // 创造一个不可变列表
         addSymbol("putstr", build_factory.buildLibraryFunction("putstr", VoidType.voidType, new ArrayList<>(Collections.singletonList(new PointerType(IntegerType.i8))))); // 创造一个不可变列表
 
 
@@ -369,9 +371,9 @@ public class LLVMGenerator {
      * | [Exp] ';' //有无Exp两种情况
      * | Block
      * | 'if' '(' Cond ')' Stmt [ 'else' Stmt ] // 1.有else 2.无else
-     * | 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt // 1. 无缺省 2. 缺省第一个
-     * ForStmt 3. 缺省Cond 4. 缺省第二个ForStmt
-     * | 'break' ';' | 'continue' ';'
+     * | 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt // 1. 无缺省 2. 缺省第一个ForStmt 3. 缺省Cond 4. 缺省第二个ForStmt
+     * | 'break' ';'
+     * | 'continue' ';'
      * | 'return' [Exp] ';' // 1.有Exp 2.无Exp
      * | LVal '=' 'getint''('')'';'
      * | 'printf''('FormatString{','Exp}')'';' // 1.有Exp 2.无Exp
@@ -405,6 +407,38 @@ public class LLVMGenerator {
                     build_factory.buildReturn(cur_block, tmp_value);
                 } else { // 无Exp
                     build_factory.buildReturn(cur_block);
+                }
+                break;
+            case LVALASSIGNGETINT:
+                if (stmt.getLval().getExps().isEmpty()){
+                    Value pointer = getValue(stmt.getLval().getIdentString());
+                    tmp_value = build_factory.buildCall(cur_block, (Function) getValue("getint"), new ArrayList<>());
+                    build_factory.buildStore(cur_block, pointer, tmp_value);
+                } else { // TODO:数组
+
+                }
+                break;
+            case PRINTF:
+                Token format_string_token = stmt.getFormat_string_token();
+                String format_string = format_string_token.token.replace("\\n","\n").replace("\"",""); // 将'\n'转置为换行符且去掉头尾不输出的两个引号
+                ArrayList<Value> printf_args_values = new ArrayList<>();
+                for (Exp exp : stmt.getPrintf_exp_list()){
+                    visitExp(exp);
+                    printf_args_values.add(tmp_value);
+                }
+                int pos = 0;
+                for (pos=0; pos<format_string.length(); pos++){
+                    if (format_string.charAt(pos)=='%'){ // 输出value
+                        build_factory.buildCall(cur_block, (Function) getValue("putint"), new ArrayList<Value>(){{add(printf_args_values.remove(0));}}); // 取第一个exp，然后删除第一个exp
+                        pos++;
+                    } else { // 输出字符 TODO: CHAR TO STRING
+                        if (char_to_string){
+
+                        } else {
+                            int i = pos; // 因为内部类需要final类型或者实际上是final的
+                            build_factory.buildCall(cur_block, (Function) getValue("putch"), new ArrayList<Value>(){{add(build_factory.getConstInt(format_string.charAt(i)));}});
+                        }
+                    }
                 }
                 break;
             default:
@@ -497,7 +531,7 @@ public class LLVMGenerator {
     public void visitUnaryExp(UnaryExp unary_exp) {
         if (unary_exp.getPrimaryExp()!=null){ // PrimaryExp
             visitPrimaryExp(unary_exp.getPrimaryExp());
-        } else if (unary_exp.getUnaryOp()!=null){
+        } else if (unary_exp.getUnaryOp()!=null){ // UnaryOp UnaryExp
             switch (unary_exp.getUnaryOp().getUnaryOpType()){
                 case PLUS -> visitUnaryExp(unary_exp.getUnaryExp());
                 case MINU -> {
@@ -510,9 +544,27 @@ public class LLVMGenerator {
                 }
                 //                case NOT ->
             }
+        } else { // Ident '(' [FuncRParams] ')'
+            func_rparam_list = new ArrayList<>();
+            if (unary_exp.getFuncRParams()!=null){ // 有实参的函数
+                visitFuncRParams(unary_exp.getFuncRParams());
+            }
+            tmp_value = build_factory.buildCall(cur_block, (Function) getValue(unary_exp.getIdentString()), func_rparam_list);
         }
-        // TODO:函数的情况
     }
+
+    /**
+     * FuncRParams → Exp { ',' Exp }
+     */
+    public void visitFuncRParams(FuncRParams funcRParams) {
+        ArrayList<Value> values = new ArrayList<>();
+        for (Exp exp : funcRParams.getExpList()){
+            visitExp(exp);
+            values.add(tmp_value);
+        }
+        func_rparam_list = values;
+    }
+
 
     /**
      * PrimaryExp → '(' Exp ')' | LVal | Number
@@ -528,7 +580,7 @@ public class LLVMGenerator {
     }
 
     /**
-     * LVal → Ident {'[' Exp ']'} //1.普通变量 2.一维数组 3.二维数组
+     * LVal → Ident {'[' Exp ']'} // 1.普通变量 2.一维数组 3.二维数组
      */
     public void visitLVal(LVal lVal) {
         if (is_const){ // 定义时使用
@@ -545,6 +597,9 @@ public class LLVMGenerator {
             if (lVal.getExps().isEmpty()){
                 Value l = getValue(lVal.getIdentString());
                 tmp_value = l;
+                if (l==null){ // 符号表中没有指定的变量
+                    System.out.println("error in LLVMGen, LVal");
+                }
                 IRType type = l.getType();
                 if (!(((PointerType) type).getTargetType() instanceof ArrayType)){
                     tmp_value = build_factory.buildLoad(cur_block, tmp_value);

@@ -82,6 +82,10 @@ public class UnaryExp extends NonTerminal { //
         return unary_exp_type;
     }
 
+    public String getIdentString() {
+        return ident.getDataToken().token;
+    }
+
     public PrimaryExp getPrimaryExp() {
         if (PrimaryExp==null)
             return null;
@@ -100,5 +104,9 @@ public class UnaryExp extends NonTerminal { //
         return (UnaryExp) (UnaryExp.getDataToken().nt);
     }
 
-
+    public FuncRParams getFuncRParams() {
+        if (FuncRParamList==null)
+            return null;
+        return (FuncRParams) FuncRParamList.getDataToken().nt;
+    }
 }

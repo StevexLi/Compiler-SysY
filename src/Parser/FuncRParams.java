@@ -6,6 +6,12 @@ import DataStructure.Token;
 
 import java.util.ArrayList;
 
+/**
+ * 函数实参列表 FuncRParams → Exp { ',' Exp }
+ *
+ * @author Stevex
+ * @date 2023/10/13
+ */
 public class FuncRParams extends NonTerminal {
     ArrayList<ASTNode> Exp_list = new ArrayList<>();
     int param_num = 0;
@@ -38,5 +44,13 @@ public class FuncRParams extends NonTerminal {
 
     public ArrayList<ASTNode> getParamsExp(){
         return params_exp;
+    }
+
+    public ArrayList<Exp> getExpList() {
+        ArrayList<Exp>ExpList = new ArrayList<>();
+        for (ASTNode node : params_exp){
+            ExpList.add((Exp) node.getDataToken().nt);
+        }
+        return ExpList;
     }
 }

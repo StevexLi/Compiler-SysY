@@ -12,9 +12,11 @@ public class Function extends Value {
     private IList<BasicBlock, Function> list;
     private INode<Function, IRModule> node;
     private ArrayList<Argument> arguments;
-    private ArrayList<Function> pred; // predecessors
-    private ArrayList<Function> succ; // successors
+    private ArrayList<Function> preds; // predecessors
+    private ArrayList<Function> succs; // successors
     private boolean is_lib_func;
+
+    private boolean NotAllLibSucc = false;
 
 
     public Function(String name, IRType type, boolean isLibraryFunc) {
@@ -23,8 +25,8 @@ public class Function extends Value {
         this.list = new IList<>(this);
         this.node = new INode<>(this);
         this.arguments = new ArrayList<>();
-        this.pred = new ArrayList<>();
-        this.succ = new ArrayList<>();
+        this.preds = new ArrayList<>();
+        this.succs = new ArrayList<>();
         this.is_lib_func = isLibraryFunc;
         for (IRType param : ((FunctionType) type).getParam_type()){
             arguments.add(new Argument(param,((FunctionType) type).getParam_type().indexOf(param), is_lib_func));
@@ -40,6 +42,15 @@ public class Function extends Value {
     }
     public boolean isLibFunc() {
         return is_lib_func;
+    }
+
+    public void addPred(Function pred){
+        preds.add(pred);
+    }
+    public void addSucc(Function succ) {
+        succs.add(succ);
+        if (!succ.isLibFunc())
+            NotAllLibSucc = true;
     }
 
 
