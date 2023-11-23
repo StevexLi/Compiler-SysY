@@ -7,10 +7,7 @@ import Ir.values.instructions.IROp;
 import Lexer.LexType;
 import Parser.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static Parser.Stmt.StmtType.BLOCK;
 
@@ -25,7 +22,10 @@ public class LLVMGenerator {
     private boolean is_const = false;
 
     private Function cur_func;
+    private boolean is_reg = false;
+    private ArrayList<IRType> func_type_list;
     private ArrayList<Value> func_args_list;
+    private int tmp_index = 0;
     private BasicBlock cur_block;
 
     private IROp tmp_op;
@@ -33,6 +33,7 @@ public class LLVMGenerator {
     private IRType tmp_type;
     private Integer save_value_int;
     private IROp save_op;
+
 
 
     /**
@@ -120,9 +121,9 @@ public class LLVMGenerator {
         for (Decl decl : compUnit.getDecl()){
             visitDecl(decl);
         }
-//        for (FuncDef funcDef : getFuncDef()){
-//            visitFuncDef(funcDef);
-//        }
+        for (FuncDef func_def : compUnit.getFuncDef()){
+            visitFuncDef(func_def);
+        }
         visitMainFuncDef(compUnit.getMainFuncDef());
     }
 
@@ -252,6 +253,76 @@ public class LLVMGenerator {
         save_value_int = null;
         visitAddExp(constExp.getAddExp());
         is_const = false;
+    }
+
+
+    /**
+     * FuncDef → FuncType Ident '(' [FuncFParams] ')' Block
+     */
+    public void visitFuncDef(FuncDef funcDef) {
+        IRType func_type = VoidType.voidType;
+        if (funcDef.getFuncType().equals(LexType.INTTK)) {
+            func_type = IntegerType.i32;
+        }
+        String func_name = funcDef.getIdentString();
+        is_global  = false;
+        func_type_list = new ArrayList<>();
+        if (funcDef.getFuncFParams()!=null){
+            visitFuncFParams(funcDef.getFuncFParams());
+        }
+        Function func = build_factory.buildFunction(func_name, func_type, func_type_list);
+        cur_func = func;
+        addSymbol(func_name, func);
+        makeSymbolAndConstTable();
+        addSymbol(func_name, func);
+        cur_block = build_factory.buildBasicBlock(func);
+        func_args_list = build_factory.getFuncArgs(cur_func);
+        is_reg = true;
+        if (funcDef.getFuncFParams()!=null) {
+            visitFuncFParams(funcDef.getFuncFParams());
+        }
+        is_reg = false;
+        visitBlock(funcDef.getBlock());
+        is_global = true;
+        popSymbolAndConstTable();
+        build_factory.checkBlockEnd(cur_block);
+    }
+
+    /**
+     * FuncFParams -> FuncFParam { ',' FuncFParam }
+     */
+    public void visitFuncFParams(FuncFParams funcFParams) {
+        if (is_reg) { // 函数对应的符号表内
+            tmp_index = 0;
+            for (FuncFParam funcFParam : funcFParams.getFuncFParam_list()){
+                visitFuncFParam(funcFParam);
+                tmp_index++;
+            }
+        } else {
+            func_type_list = new ArrayList<>();
+            for (FuncFParam funcFParam : funcFParams.getFuncFParam_list()){
+                visitFuncFParam(funcFParam);
+                func_type_list.add(tmp_type);
+            }
+        }
+    }
+
+    public void visitFuncFParam(FuncFParam funcFParam) {
+        if (is_reg) {
+            int i = tmp_index;
+            Value value = build_factory.buildVar(cur_block, func_args_list.get(i), false, func_args_list.get(i).getType());
+            addSymbol(funcFParam.getIdentString(), value);
+        } else {
+            if (funcFParam.getDim()==0){ // 非数组
+                tmp_type = VoidType.voidType;
+                switch (funcFParam.getType()){
+                    case INTTK -> tmp_type = IntegerType.i32;
+                }
+            } else { // TODO:数组
+
+            }
+
+        }
     }
 
     /**

@@ -15,6 +15,7 @@ public class FuncDef extends NonTerminal {
     ASTNode FuncType;
     ASTNode Ident;
     ArrayList<ASTNode> FuncFParams = new ArrayList<>();
+    FuncFParams funcFParams;
     ASTNode Block;
     int params_num;
     ArrayList<ASTNode> params = new ArrayList<>();
@@ -38,7 +39,8 @@ public class FuncDef extends NonTerminal {
                 FuncFParams.add(new ASTNode(Parser.now));
                 Parser.lexer.next();
                 if (!Parser.now.equalLexType(LexType.RPARENT)){
-                    FuncFParams.add(new ASTNode(new Token(new FuncFParams())));
+                    funcFParams = new FuncFParams();
+                    FuncFParams.add(new ASTNode(new Token(funcFParams)));
                 }
                 if (Parser.now.equalLexType(LexType.RPARENT)){
                     FuncFParams.add(new ASTNode(Parser.now));
@@ -76,5 +78,18 @@ public class FuncDef extends NonTerminal {
                 node1.setNextSibling(Block);
             }
         }
+    }
+
+    public LexType getFuncType() {
+        return ((FuncType) FuncType.getDataToken().nt).getType();
+    }
+    public String getIdentString() {
+        return Ident.getDataToken().token;
+    }
+    public FuncFParams getFuncFParams() {
+        return funcFParams;
+    }
+    public Block getBlock() {
+        return (Block) Block.getDataToken().nt;
     }
 }

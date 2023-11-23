@@ -1,16 +1,12 @@
-const int a=1;
-const int b=2+a;
-int c=3*(b+ -+-+-+-+-+-10);
+int a=1000;
+int aaa(int a,int b){
+        return a+b;
+}
+void ab(){
+        a=1200;
+        return;
+}
+
 int main(){
-  int d=4+c;
-  int e=5*d;
-  {
-    int d=a+5;
-    int c=c*2;
-    d=b;
-    int f=20;
-    e=e+a*20;
-  }
-  int f=10;
-  return e*f;
+    return 0+2;
 }

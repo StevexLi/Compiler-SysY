@@ -9,8 +9,8 @@ import DataStructure.Token;
 import java.util.ArrayList;
 
 /**
- * 函数形参表 FuncFParams → FuncFParam { ',' FuncFParam } // 1.花括号内重复0次 2.花括号内
- * 重复多次
+ * 函数形参FuncFParam → BType Ident ['[' ']' { '[' ConstExp ']' }]
+ * // 1.普通变量 2.一维数组变量 3.二维数组变量
  *
  * @author Stevex
  * @date 2023/10/13
@@ -78,10 +78,15 @@ public class FuncFParam extends NonTerminal {
         return const_exp;
     }
 
-    LexType getType() {
+    public LexType getType() {
         return ((BType)((Token)BType.getData()).nt).getType();
     }
-
+    public String getIdentString() {
+        return Ident.getDataToken().token;
+    }
+    public ConstExp getConstExp() {
+        return (ConstExp) const_exp.getDataToken().nt;
+    }
     public int getDim() {
         return dim;
     }

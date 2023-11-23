@@ -15,4 +15,8 @@ public class FuncType extends NonTerminal {
             setFirstchild(FuncType);
         }
     }
+
+    public LexType getType() {
+        return type;
+    }
 }

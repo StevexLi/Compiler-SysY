@@ -52,28 +52,28 @@ public class IRModule {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb_gyj = new StringBuilder();
         for (GlobalVar g_var : global_vars){
-            sb.append(g_var.toString()).append("\n");
+            sb_gyj.append(g_var.toString()).append("\n");
         }
         if (!global_vars.isEmpty()){
-            sb.append("\n");
+            sb_gyj.append("\n");
         }
         refreshRegNum();
         for (INode<Function, IRModule> func : functions) {
             if (func.getValue().isLibFunc()){ // 是库函数
-                sb.append("declare ").append(func.getValue().toString()).append("\n");
+                sb_gyj.append("declare ").append(func.getValue().toString()).append("\n");
             } else {
-                sb.append("\ndefine dso_local ").append(func.getValue().toString()).append("{\n");
+                sb_gyj.append("\ndefine dso_local ").append(func.getValue().toString()).append("{\n");
                 for (INode<BasicBlock, Function> block : func.getValue().getList()){
                     if (block != func.getValue().getList().getBegin())
-                        sb.append("\n");
-                    sb.append(block.getValue().getName()).append(":\n").append(block.getValue().toString());
+                        sb_gyj.append("\n");
+                    sb_gyj.append(block.getValue().getName()).append(":\n").append(block.getValue().toString());
                 }
-                sb.append("}\n");
+                sb_gyj.append("}\n");
             }
         }
-        sb.append("\n; this is llvm_ir.txt");
-        return sb.toString();
+        sb_gyj.append("\n; this is llvm_ir.txt");
+        return sb_gyj.toString();
     }
 }
