@@ -51,13 +51,38 @@ public class BuildFactory {
         return ins;
     }
 
+
+    /**
+     * 构建调用
+     */
     public CallIns buildCall(BasicBlock block, Function func, ArrayList<Value> args) {
         CallIns ins = new CallIns(block, func, args);
         ins.addInsToBlock(block);
         return ins;
     }
 
+    /**
+     * 构建分支
+     */
+    public BrIns buildBranch(BasicBlock block, BasicBlock true_block) {
+        BrIns ins = new BrIns(block, true_block);
+        ins.addInsToBlock(block);
+        return ins;
+    }
+    public BrIns buildBranch(BasicBlock block, Value cond, BasicBlock true_block, BasicBlock false_block) {
+        BrIns ins = new BrIns(block, cond, true_block, false_block);
+        ins.addInsToBlock(block);
+        return ins;
+    }
 
+    public Value buildZext(Value value, BasicBlock block){
+        if (value instanceof ConstInt){
+            return new ConstInt(((ConstInt) value).getValue());
+        }
+        ConvIns ins = new ConvIns(block, IROp.Zext, value);
+        ins.addInsToBlock(block);
+        return ins;
+    }
 
 
 
@@ -103,7 +128,9 @@ public class BuildFactory {
      */
     public BinaryIns buildBinary(BasicBlock block, IROp op, Value left, Value right) {
         BinaryIns binary_ins = new BinaryIns(block, op, left, right);
-        // TODO: op is And or Or
+        if (op == IROp.And || op == IROp.Or){
+            binary_ins = buildBinary(block, IROp.Ne, binary_ins, ConstInt.ZERO);
+        }
         binary_ins.addInsToBlock(block);
         return binary_ins;
     }

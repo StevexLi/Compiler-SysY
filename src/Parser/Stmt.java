@@ -33,7 +33,13 @@ public class Stmt extends NonTerminal {
     Exp exp_single;
     Block block;
     Token format_string_token;
+    ForStmt for_stmt1;
+    ForStmt for_stmt2;
+    Cond cond;
+    Stmt for_stmt_body;
     ArrayList<Exp> printf_exp_list = new ArrayList<>();
+    ArrayList<Stmt> stmt_list = new ArrayList<>();
+    boolean has_else = false;
 
     public enum StmtType {
         LVALASSIGNEXP,
@@ -64,24 +70,35 @@ public class Stmt extends NonTerminal {
                 if (Parser.now.equalLexType(LexType.LPARENT)){
                     Stmt_list.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
-                    Stmt_list.add(new ASTNode(new Token(new Cond())));
+                    cond = new Cond();
+                    Stmt_list.add(new ASTNode(new Token(cond)));
                     if (Parser.now.equalLexType(LexType.RPARENT)){
                         Stmt_list.add(new ASTNode(Parser.now));
                         Parser.lexer.next();
-                        Stmt_list.add(new ASTNode(new Token(new Stmt(in_for))));
+                        Stmt stmt = new Stmt(in_for);
+                        stmt_list.add(stmt);
+                        Stmt_list.add(new ASTNode(new Token(stmt)));
                         if (Parser.now.equalLexType(LexType.ELSETK)){
+                            has_else = true;
                             Stmt_list.add(new ASTNode(Parser.now));
                             Parser.lexer.next();
-                            Stmt_list.add(new ASTNode(new Token(new Stmt(in_for))));
+                            stmt = new Stmt(in_for);
+                            stmt_list.add(stmt);
+                            Stmt_list.add(new ASTNode(new Token(stmt)));
                         }
                     } else {
 //                        throw new CompilerException("2",Parser.now.line, "Stmt_if2");
                         ErrorReporter.reportError(Parser.prev.line, ErrorType.EJ); // fixme:错误处理j
-                        Stmt_list.add(new ASTNode(new Token(new Stmt(in_for))));
+                        Stmt stmt = new Stmt(in_for);
+                        stmt_list.add(stmt);
+                        Stmt_list.add(new ASTNode(new Token(stmt)));
                         if (Parser.now.equalLexType(LexType.ELSETK)){
+                            has_else = true;
                             Stmt_list.add(new ASTNode(Parser.now));
                             Parser.lexer.next();
-                            Stmt_list.add(new ASTNode(new Token(new Stmt(in_for))));
+                            stmt = new Stmt(in_for);
+                            stmt_list.add(stmt);
+                            Stmt_list.add(new ASTNode(new Token(stmt)));
                         }
                     }
                 } else {
@@ -96,7 +113,8 @@ public class Stmt extends NonTerminal {
                     Stmt_list.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
                     if (!Parser.now.equalLexType(LexType.SEMICN)){
-                        Stmt_list.add(new ASTNode(new Token(new ForStmt())));
+                        for_stmt1 = new ForStmt();
+                        Stmt_list.add(new ASTNode(new Token(for_stmt1)));
                     }
                     if (Parser.now.equalLexType(LexType.SEMICN)){
                         Stmt_list.add(new ASTNode(Parser.now));
@@ -106,7 +124,8 @@ public class Stmt extends NonTerminal {
                         ErrorReporter.reportError(Parser.prev.line, ErrorType.EI); // fixme:错误处理i
                     }
                     if (!Parser.now.equalLexType(LexType.SEMICN)){
-                        Stmt_list.add(new ASTNode(new Token(new Cond())));
+                        cond = new Cond();
+                        Stmt_list.add(new ASTNode(new Token(cond)));
                     }
                     if (Parser.now.equalLexType(LexType.SEMICN)){
                         Stmt_list.add(new ASTNode(Parser.now));
@@ -116,7 +135,8 @@ public class Stmt extends NonTerminal {
                         ErrorReporter.reportError(Parser.prev.line, ErrorType.EI); // fixme:错误处理i
                     }
                     if (!Parser.now.equalLexType(LexType.RPARENT)){
-                        Stmt_list.add(new ASTNode(new Token(new ForStmt())));
+                        for_stmt2 = new ForStmt();
+                        Stmt_list.add(new ASTNode(new Token(for_stmt2)));
                     }
                     if (Parser.now.equalLexType(LexType.RPARENT)){
                         Stmt_list.add(new ASTNode(Parser.now));
@@ -125,7 +145,8 @@ public class Stmt extends NonTerminal {
 //                        throw new CompilerException("2",Parser.now.line, "Stmt_for3");
                         ErrorReporter.reportError(Parser.prev.line, ErrorType.EJ); // fixme:错误处理j
                     }
-                    Stmt_list.add(new ASTNode(new Token(new Stmt(true))));
+                    for_stmt_body = new Stmt(true);
+                    Stmt_list.add(new ASTNode(new Token(for_stmt_body)));
                 } else {
                     throw new CompilerException("2",Parser.now.line, "Stmt_for");
                 }
@@ -343,7 +364,7 @@ public class Stmt extends NonTerminal {
         return stmt_type;
     }
 
-    public LVal getLval() {
+    public LVal getLVal() {
         return lval;
     }
 
@@ -359,6 +380,29 @@ public class Stmt extends NonTerminal {
         return format_string_token;
     }
 
+    public Cond getCond() {
+        return cond;
+    }
+
+    public ForStmt getFor_stmt1() {
+        return for_stmt1;
+    }
+
+    public ForStmt getFor_stmt2() {
+        return for_stmt2;
+    }
+
+    public Stmt getFor_stmt_body() {
+        return for_stmt_body;
+    }
+
+    public boolean Has_else() {
+        return has_else;
+    }
+
+    public ArrayList<Stmt> getStmtList() {
+        return stmt_list;
+    }
     public ArrayList<Exp> getPrintf_exp_list() {
         return printf_exp_list;
     }

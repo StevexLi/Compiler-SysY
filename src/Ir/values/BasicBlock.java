@@ -8,6 +8,7 @@ import Ir.types.VoidType;
 import Ir.values.instructions.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 基本块
@@ -39,6 +40,18 @@ public class BasicBlock extends Value {
         return node;
     }
 
+    public List<BasicBlock> getPredecessors() {
+        return pred;
+    }
+    public List<BasicBlock> getSuccessors() {
+        return succ;
+    }
+    public void addPredecessor(BasicBlock block){
+        pred.add(block);
+    }
+    public void addSuccessor(BasicBlock block){
+        succ.add(block);
+    }
 
     public void refreshReg() {
         for (INode<Instruction, BasicBlock> node : this.ins) { // TODO:MemPhi & LoadDepInst

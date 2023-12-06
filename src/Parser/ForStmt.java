@@ -26,4 +26,16 @@ public class ForStmt extends NonTerminal {
             ASSIGN.setNextSibling(Exp);
         }
     }
+
+    public LVal getLVal() {
+        if (LVal==null)
+            return null;
+        return (LVal) LVal.getDataToken().nt;
+    }
+
+    public Exp getExp_single() {
+        if (Exp==null)
+            return null;
+        return (Exp) Exp.getDataToken().nt;
+    }
 }

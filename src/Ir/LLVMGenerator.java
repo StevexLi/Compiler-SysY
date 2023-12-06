@@ -9,8 +9,6 @@ import Parser.*;
 
 import java.util.*;
 
-import static Parser.Stmt.StmtType.BLOCK;
-
 public class LLVMGenerator {
     private static LLVMGenerator instance = new LLVMGenerator();
     public static LLVMGenerator getInstance(){
@@ -29,6 +27,10 @@ public class LLVMGenerator {
     private ArrayList<Value> func_rparam_list;
     private int tmp_index = 0;
     private BasicBlock cur_block;
+    private BasicBlock cur_true_block;
+    private BasicBlock cur_false_block;
+    private BasicBlock cur_loop_final_block;
+    private BasicBlock continue_block;
 
     private IROp tmp_op;
     private Value tmp_value;
@@ -366,6 +368,16 @@ public class LLVMGenerator {
         }
     }
 
+    public void visitForStmt(ForStmt stmt){
+        if (stmt.getLVal().getExps().isEmpty()){ // LVal非数组
+            Value pointer = getValue(stmt.getLVal().getIdentString());
+            visitExp(stmt.getExp_single());
+            tmp_value = build_factory.buildStore(cur_block, pointer, tmp_value);
+        } else { // TODO:数组
+
+        }
+    }
+
     /**
      * 语句 Stmt → LVal '=' Exp ';' // 每种类型的语句都要覆盖
      * | [Exp] ';' //有无Exp两种情况
@@ -381,8 +393,8 @@ public class LLVMGenerator {
     public void visitStmt(Stmt stmt) {
         switch (stmt.getStmt_type()){
             case LVALASSIGNEXP:
-                if (stmt.getLval().getExps().isEmpty()){ // LVal非数组
-                    Value pointer = getValue(stmt.getLval().getIdentString());
+                if (stmt.getLVal().getExps().isEmpty()){ // LVal非数组
+                    Value pointer = getValue(stmt.getLVal().getIdentString());
                     visitExp(stmt.getExp_single());
                     tmp_value = build_factory.buildStore(cur_block, pointer, tmp_value);
                 } else { // TODO:数组
@@ -399,6 +411,154 @@ public class LLVMGenerator {
                 visitBlock(stmt.getBlock());
                 popSymbolAndConstTable();
                 break;
+            case IF:
+                if (!stmt.Has_else()) { // 无else
+                    /*
+                    basic_block;
+                    if (cond){true_block}
+                    final_block;
+                     */
+                    BasicBlock basic_block = cur_block;
+
+                    BasicBlock true_block = build_factory.buildBasicBlock(cur_func);
+                    cur_block = true_block;
+                    visitStmt(stmt.getStmtList().get(0));
+                    BasicBlock final_block = build_factory.buildBasicBlock(cur_func);
+                    build_factory.buildBranch(cur_block, final_block);
+
+                    cur_true_block = true_block;
+                    cur_false_block = final_block;
+                    cur_block = basic_block;
+                    visitCond(stmt.getCond());
+
+                    cur_block = final_block;
+                } else { // 有else
+                    /*
+                    basic_block;
+                    if (cond){true_block...true_end_block}
+                    else{false_block...false_end_block}
+                    final_block;
+                     */
+                    BasicBlock basic_block = cur_block;
+
+                    BasicBlock true_block = build_factory.buildBasicBlock(cur_func);
+                    cur_block = true_block;
+                    visitStmt(stmt.getStmtList().get(0));
+                    BasicBlock true_end_block = cur_block;
+
+                    BasicBlock false_block = build_factory.buildBasicBlock(cur_func);
+                    cur_block = false_block;
+                    visitStmt(stmt.getStmtList().get(1));
+                    BasicBlock false_end_block = cur_block;
+
+                    cur_true_block = true_block;
+                    cur_false_block = false_block;
+                    cur_block = basic_block;
+                    visitCond(stmt.getCond());
+
+                    BasicBlock final_block = build_factory.buildBasicBlock(cur_func);
+                    build_factory.buildBranch(true_end_block, final_block);
+                    build_factory.buildBranch(false_end_block, final_block);
+                    cur_block = final_block;
+                }
+                break;
+            case FOR:
+                /*
+                basic_block;
+                for_stmt1_block;
+                for(cond){
+                    for_block;
+                    ...
+                    for_end_block;
+                    for_stmt_2_block;
+                }
+                loop_final_block;
+
+                 Translated as below:
+                 is_cond:
+                 basicBlock;
+                 [for_stmt1_block];
+                 if (judge——block1(cond)) {
+                    goto for_block;
+                 } else {
+                    goto loop_final_block;
+                 }
+                 for_block;
+                 [for_stmt_block2];
+                 if (judge_block2(cond)) {
+                    goto for_block;
+                 }
+                 loop_final_block;
+
+                 no_cond:
+                 basicBlock;
+                 [for_stmt1_block];
+                 for_block;
+                 [for_stmt_block2];
+                 goto for_block;
+                 loop_final_block;
+                 */
+                if (stmt.getFor_stmt1()!=null){
+                    visitForStmt(stmt.getFor_stmt1());
+                }
+                BasicBlock basic_block = cur_block;
+                BasicBlock tmp_continue_block = continue_block;
+                BasicBlock tmp_loop_final_block = cur_loop_final_block;
+                if (stmt.getCond()!=null){
+                    BasicBlock judge_block1 = build_factory.buildBasicBlock(cur_func);
+                    BasicBlock for_block = build_factory.buildBasicBlock(cur_func);
+                    BasicBlock judge_block2 = build_factory.buildBasicBlock(cur_func);
+                    build_factory.buildBranch(cur_block, judge_block1);
+                    cur_block = for_block;
+                    tmp_continue_block = continue_block = judge_block2;
+                    tmp_loop_final_block = cur_loop_final_block = build_factory.buildBasicBlock(cur_func);
+                    if (stmt.getFor_stmt2()!=null){
+                        tmp_continue_block = continue_block = build_factory.buildBasicBlock(cur_func);
+                    }
+                    visitStmt(stmt.getFor_stmt_body());
+                    build_factory.buildBranch(cur_block, tmp_continue_block);
+                    if (stmt.getFor_stmt2()!=null){
+                        cur_block = tmp_continue_block;
+                        visitForStmt(stmt.getFor_stmt2());
+                    }
+                    build_factory.buildBranch(cur_block, judge_block2);
+
+                    cur_true_block = for_block;
+                    cur_false_block = tmp_loop_final_block;
+                    cur_block = judge_block1;
+                    visitCond(stmt.getCond());
+
+                    cur_true_block = for_block;
+                    cur_false_block = tmp_loop_final_block;
+                    cur_block = judge_block2;
+                    visitCond(stmt.getCond());
+
+                    cur_block = tmp_loop_final_block;
+                } else { // 无cond
+                    BasicBlock for_block = build_factory.buildBasicBlock(cur_func);
+                    build_factory.buildBranch(cur_block, for_block); // TODO: 必要？
+                    cur_block = for_block;
+                    tmp_continue_block = continue_block = for_block;
+                    tmp_loop_final_block = cur_loop_final_block = build_factory.buildBasicBlock(cur_func);
+                    if (stmt.getFor_stmt2()!=null){
+                        tmp_continue_block = continue_block = build_factory.buildBasicBlock(cur_func);
+                    }
+                    visitStmt(stmt.getFor_stmt_body());
+                    build_factory.buildBranch(cur_block, tmp_continue_block);
+                    if (stmt.getFor_stmt2()!=null){
+                        cur_block = tmp_continue_block;
+                        visitForStmt(stmt.getFor_stmt2());
+                    }
+                    build_factory.buildBranch(cur_block, for_block);
+                    cur_block = tmp_loop_final_block;
+                }
+                break;
+            case BREAK:
+                build_factory.buildBranch(cur_block, cur_loop_final_block);
+                break;
+            case CONTINUE:
+                build_factory.buildBranch(cur_block, continue_block);
+                break;
             case RETURN:
                 if (stmt.getExp_single()!=null){ // 有Exp
                     visitExp(stmt.getExp_single());
@@ -407,11 +567,12 @@ public class LLVMGenerator {
                     build_factory.buildReturn(cur_block, tmp_value);
                 } else { // 无Exp
                     build_factory.buildReturn(cur_block);
+                    System.out.println(stmt.getExp_single());
                 }
                 break;
             case LVALASSIGNGETINT:
-                if (stmt.getLval().getExps().isEmpty()){
-                    Value pointer = getValue(stmt.getLval().getIdentString());
+                if (stmt.getLVal().getExps().isEmpty()){
+                    Value pointer = getValue(stmt.getLVal().getIdentString());
                     tmp_value = build_factory.buildCall(cur_block, (Function) getValue("getint"), new ArrayList<>());
                     build_factory.buildStore(cur_block, pointer, tmp_value);
                 } else { // TODO:数组
@@ -443,6 +604,106 @@ public class LLVMGenerator {
                 break;
             default:
                 break;
+        }
+    }
+
+    /**
+     * Cond → LOrExp
+     */
+    public void visitCond(Cond cond) {
+        visitLOrExp(cond.getLOrExp());
+    }
+
+    /**
+     * LOrExp → LAndExp | LOrExp '||' LAndExp
+     */
+    public void visitLOrExp(LOrExp lOrExp) {
+        ArrayList<Token> landexp_list = lOrExp.getLAndExp_list();
+        for (int i=0; i<landexp_list.size(); i+=2){
+            BasicBlock true_block = cur_true_block;
+            BasicBlock false_block = cur_false_block;
+            BasicBlock tmp_false_block = cur_false_block;
+            BasicBlock then_block = null;
+            if (i<landexp_list.size()-2){
+                then_block = build_factory.buildBasicBlock(cur_func);
+                tmp_false_block = then_block;
+            }
+            cur_false_block = tmp_false_block;
+            visitLAndExp((LAndExp)landexp_list.get(i).nt);
+            cur_true_block = true_block;
+            cur_false_block = false_block;
+            if (i<landexp_list.size()-2){
+                cur_block = then_block;
+            }
+        }
+    }
+
+    /**
+     * LAndExp → EqExp | LAndExp '&&' EqExp
+     */
+    public void visitLAndExp(LAndExp lAndExp) {
+        ArrayList<Token> eqexp_list = lAndExp.getEqExp_list();
+        for (int i=0; i<eqexp_list.size(); i+=2){
+            BasicBlock true_block = cur_true_block;
+            BasicBlock false_block = cur_false_block;
+            BasicBlock tmp_true_block = cur_true_block;
+            BasicBlock then_block = null;
+            if (i<eqexp_list.size()-2){
+                then_block = build_factory.buildBasicBlock(cur_func);
+                tmp_true_block = then_block;
+            }
+            cur_true_block = tmp_true_block;
+            tmp_value = null;
+            visitEqExp((EqExp)eqexp_list.get(i).nt);
+            build_factory.buildBranch(cur_block, tmp_value, cur_true_block, cur_false_block);
+            cur_true_block = true_block;
+            cur_false_block = false_block;
+            if (i<eqexp_list.size()-2){
+                cur_block = then_block;
+            }
+        }
+    }
+
+    /**
+     * EqExp → RelExp | EqExp ('==' | '!=') RelExp
+     */
+    public void visitEqExp(EqExp eqExp){
+        ArrayList<Token> relexp_list = eqExp.getRelExp_list();
+        for (int i=0; i<relexp_list.size(); i+=2){
+            Value value = tmp_value;
+            IROp op = tmp_op;
+            tmp_value = null;
+            visitRelExp((RelExp)relexp_list.get(i).nt);
+            if (value != null){
+                tmp_value = build_factory.buildBinary(cur_block, op, value, tmp_value);
+            }
+            if (i<relexp_list.size()-2){
+                tmp_op = relexp_list.get(i+1).type.equals(LexType.EQL) ? IROp.Eq : IROp.Ne;
+            }
+        }
+    }
+
+    /**
+     * RelExp → AddExp | RelExp ('<' | '>' | '<=' | '>=') AddExp
+     */
+    public void visitRelExp(RelExp relExp){
+        ArrayList<Token> addexp_list = relExp.getAddExp_list();
+        for (int i=0; i<addexp_list.size(); i+=2){
+            Value value = tmp_value;
+            IROp op = tmp_op;
+            tmp_value = null;
+            visitAddExp((AddExp) addexp_list.get(i).nt);
+            if (value != null){
+                tmp_value = build_factory.buildBinary(cur_block, op, value, tmp_value);
+            }
+            if (i<addexp_list.size()-2){
+                switch (addexp_list.get(i+1).type){
+                    case LSS -> tmp_op = IROp.Lt;
+                    case LEQ -> tmp_op = IROp.Le;
+                    case GRE -> tmp_op = IROp.Gt;
+                    case GEQ -> tmp_op = IROp.Ge;
+                }
+            }
         }
     }
 
@@ -481,7 +742,7 @@ public class LLVMGenerator {
             for (int i=2; i<mulexp_list.size(); i+=2){
                 visitMulExp((MulExp)(mulexp_list.get(i).nt));
                 op = mulexp_list.get(i-1).type.equals(LexType.PLUS) ? IROp.Add : IROp.Sub;
-                value = tmp_value = build_factory.buildBinary(cur_block, op, value, tmp_value); // TODO: really?
+                value = tmp_value = build_factory.buildBinary(cur_block, op, value, tmp_value);
             }
         }
     }
@@ -520,7 +781,7 @@ public class LLVMGenerator {
                     case DIV -> op = IROp.Div;
                     case MOD -> op = IROp.Mod;
                 }
-                value = tmp_value = build_factory.buildBinary(cur_block, op, value, tmp_value); // TODO: really?
+                value = tmp_value = build_factory.buildBinary(cur_block, op, value, tmp_value);
             }
         }
     }

@@ -70,4 +70,12 @@ public class EqExp extends NonTerminal {
             RelExp.get(1).setNextSibling(RelExp.get(2));
         }
     }
+
+    public ArrayList<Token> getRelExp_list() {
+        ArrayList<Token> list = new ArrayList<>();
+        for (ASTNode node : RelExp_list){
+            list.add(node.getDataToken());
+        }
+        return list;
+    }
 }

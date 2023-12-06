@@ -68,4 +68,12 @@ public class LOrExp extends NonTerminal {
             LAndExp.get(1).setNextSibling(LAndExp.get(2));
         }
     }
+
+    public ArrayList<Token> getLAndExp_list() {
+        ArrayList<Token> list = new ArrayList<>();
+        for (ASTNode node : LAndExp_list){
+            list.add(node.getDataToken());
+        }
+        return list;
+    }
 }

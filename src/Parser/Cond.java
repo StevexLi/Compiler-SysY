@@ -15,4 +15,8 @@ public class Cond extends NonTerminal {
         LOrExp = new ASTNode(new Token(new LOrExp()));
         setFirstchild(LOrExp);
     }
+
+    public LOrExp getLOrExp(){
+        return (LOrExp) this.LOrExp.getDataToken().nt;
+    }
 }
