@@ -16,6 +16,7 @@ import java.util.ArrayList;
 public class InitVal extends NonTerminal {
     ASTNode Exp;
     ArrayList<ASTNode> InitVal_list = new ArrayList<>();
+    ArrayList<InitVal> initVal_list = new ArrayList<>();
     InitVal() throws Exception {
         this.nt_type = NonTerminalType.INITVAL;
         if (!Parser.now.equalLexType(LexType.LBRACE)){ // InitVal → Exp
@@ -28,11 +29,15 @@ public class InitVal extends NonTerminal {
                 InitVal_list.add(new ASTNode(Parser.now));
                 Parser.lexer.next();
             } else { //   [ InitVal { ',' InitVal } ]
-                InitVal_list.add(new ASTNode(new Token(new InitVal())));
+                InitVal i = new InitVal();
+                initVal_list.add(i);
+                InitVal_list.add(new ASTNode(new Token(i)));
                 while (Parser.now.equalLexType(LexType.COMMA)){
                     InitVal_list.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
-                    InitVal_list.add(new ASTNode(new Token(new InitVal())));
+                    i = new InitVal();
+                    initVal_list.add(i);
+                    InitVal_list.add(new ASTNode(new Token(i)));
                 }
                 if (Parser.now.equalLexType(LexType.RBRACE)){
                     InitVal_list.add(new ASTNode(Parser.now));
@@ -54,5 +59,9 @@ public class InitVal extends NonTerminal {
         if (Exp==null)
             return null;
         return (Exp) Exp.getDataToken().nt;
+    }
+
+    public ArrayList<InitVal> getInitVal_list() {
+        return initVal_list;
     }
 }

@@ -8,8 +8,8 @@ import Ir.values.BuildFactory;
 import Ir.values.ConstInt;
 import Ir.values.Value;
 
-public class BrIns extends TerminalIns { // TODO: BranchIns
 
+public class BrIns extends TerminalIns { // TODO: BranchIns
     public BrIns(BasicBlock block, BasicBlock true_block) {
         super(VoidType.voidType, IROp.Br, block);
         this.addOperand(true_block);

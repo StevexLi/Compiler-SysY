@@ -2,8 +2,10 @@ package Ir.values.instructions;
 
 import Ir.types.FunctionType;
 import Ir.types.IRType;
+import Ir.types.IntegerType;
 import Ir.types.VoidType;
 import Ir.values.BasicBlock;
+import Ir.values.BuildFactory;
 import Ir.values.Function;
 import Ir.values.Value;
 
@@ -18,14 +20,34 @@ public class CallIns extends Instruction {
         }
         this.addOperand(func);
 
-        for (int i=0; i<args.size(); i++){ // TODO:Convert Type
-            Value value = args.get(i);
+        for (int i=0; i<args.size(); i++){ // Convert Type
+            IRType curType = args.get(i).getType();
+            IRType realType = ((FunctionType) func.getType()).getParam_type().get(i);
+            Value value = convType(args.get(i), basicBlock, curType, realType);
             this.addOperand(value);
         }
 
         Function cur_func = basicBlock.getNode().getParent().getValue();
         func.addPred(cur_func);
         cur_func.addSucc(func);
+    }
+
+    private Value convType(Value value, BasicBlock basicBlock, IRType curType, IRType realType) {
+        boolean isCurI1 = curType instanceof IntegerType && ((IntegerType) curType).isIx(1);
+        boolean isCurI32 = curType instanceof IntegerType && ((IntegerType) curType).isIx(32);
+        boolean isRealI1 = realType instanceof IntegerType && ((IntegerType) realType).isIx(1);
+        boolean isRealI32 = realType instanceof IntegerType && ((IntegerType) realType).isIx(32);
+        if (!isCurI1 && !isCurI32 && !isRealI1 && !isRealI32) {
+            return value;
+        } else if ((isCurI1 && isRealI1) || (isCurI32 && isRealI32)) {
+            return value;
+        } else if (isCurI1 && isRealI32) {
+            return BuildFactory.getInstance().buildZext(value, basicBlock);
+        } else if (isCurI32 && isRealI1) {
+            return BuildFactory.getInstance().buildConvToI1(value, basicBlock);
+        } else {
+            return value;
+        }
     }
 
     public Function getCalledFunction() {

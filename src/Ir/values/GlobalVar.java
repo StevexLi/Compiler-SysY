@@ -15,6 +15,10 @@ public class GlobalVar extends User{
         IRModule.getInstance().addGlobalVar(this);
     }
 
+    public Value getValue() {
+        return value;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

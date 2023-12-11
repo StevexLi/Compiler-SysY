@@ -18,6 +18,7 @@ import java.util.ArrayList;
 public class ConstInitVal extends NonTerminal {
     ASTNode ConstExp;
     ArrayList<ASTNode> ConstInitVal_list = new ArrayList<>();
+    ArrayList<ConstInitVal> constInitVal_list = new ArrayList<>();
     ConstInitVal() throws Exception {
         this.nt_type = NonTerminalType.CONSTINITVAL;
         if (!Parser.now.equalLexType(LexType.LBRACE)){ // ConstInitVal → ConstExp
@@ -30,11 +31,15 @@ public class ConstInitVal extends NonTerminal {
                 ConstInitVal_list.add(new ASTNode(Parser.now));
                 Parser.lexer.next();
             } else { //  [ ConstInitVal { ',' ConstInitVal } ]
-                ConstInitVal_list.add(new ASTNode(new Token(new ConstInitVal())));
+                ConstInitVal e = new ConstInitVal();
+                constInitVal_list.add(e);
+                ConstInitVal_list.add(new ASTNode(new Token(e)));
                 while (Parser.now.equalLexType(LexType.COMMA)){
                     ConstInitVal_list.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
-                    ConstInitVal_list.add(new ASTNode(new Token(new ConstInitVal())));
+                    e = new ConstInitVal();
+                    constInitVal_list.add(e);
+                    ConstInitVal_list.add(new ASTNode(new Token(e)));
                 }
                 if (Parser.now.equalLexType(LexType.RBRACE)){
                     ConstInitVal_list.add(new ASTNode(Parser.now));
@@ -56,5 +61,9 @@ public class ConstInitVal extends NonTerminal {
         if (ConstExp==null)
             return null;
         return (ConstExp) ConstExp.getDataToken().nt;
+    }
+
+    public ArrayList<ConstInitVal> getConstInitVal_list() {
+        return constInitVal_list;
     }
 }

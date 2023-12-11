@@ -1,5 +1,6 @@
 package Ir.values;
 
+import Ir.types.ArrayType;
 import Ir.types.FunctionType;
 import Ir.types.IRType;
 import Ir.types.IntegerType;
@@ -35,6 +36,39 @@ public class BuildFactory {
         if (value!=null){ // 有初始值
             buildStore(block, ins, value);
         }
+        return ins;
+    }
+
+
+    /**
+     * 数组相关构造
+     */
+    public GlobalVar buildGlobalArray(String name, IRType type, boolean is_cosnt){
+        Value const_arr = new ConstArray(type, ((ArrayType) type).getElementType(), ((ArrayType) type).getCapacity());
+        return new GlobalVar(name, type, is_cosnt, const_arr);
+    }
+    public AllocaIns buildArray(BasicBlock block, IRType type, boolean is_const){
+        AllocaIns ins = new AllocaIns(block, is_const, type);
+        ins.addInsToBlock(block);
+        return ins;
+    }
+    public void buildInitArray(Value array, int offset, Value value){
+        ((ConstArray) ((GlobalVar) array).getValue()).storeValue(offset, value);
+    }
+
+    public IRType getArrayType(IRType type, Integer length_this_dim){
+        return new ArrayType(type, length_this_dim);
+    }
+
+
+    public GEPIns buildGEP(BasicBlock block, Value pointer, int offset){
+        GEPIns ins = new GEPIns(block, pointer, offset);
+        ins.addInsToBlock(block);
+        return ins;
+    }
+    public GEPIns buildGEP(BasicBlock block, Value pointer, ArrayList<Value> indice){
+        GEPIns ins = new GEPIns(block, pointer, indice);
+        ins.addInsToBlock(block);
         return ins;
     }
 
@@ -81,6 +115,12 @@ public class BuildFactory {
         }
         ConvIns ins = new ConvIns(block, IROp.Zext, value);
         ins.addInsToBlock(block);
+        return ins;
+    }
+
+    public BinaryIns buildConvToI1(Value val, BasicBlock basicBlock) {
+        BinaryIns ins = new BinaryIns(basicBlock, IROp.Ne, val, getConstInt(0));
+        ins.addInsToBlock(basicBlock);
         return ins;
     }
 
@@ -133,6 +173,10 @@ public class BuildFactory {
         }
         binary_ins.addInsToBlock(block);
         return binary_ins;
+    }
+
+    public BinaryIns buildNot(BasicBlock block, Value value){
+        return buildBinary(block, IROp.Eq, value, ConstInt.ZERO);
     }
 
 

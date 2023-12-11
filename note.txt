@@ -6,3 +6,7 @@ lexer未考虑单独一个'\'的情况，已在语法分析中修正
 
 代码生成1
 已撤销--在LLVMGenerator中改变了buildReturn的的tmp_value的IRType，改为i32，原先是null
+
+代码生成2
+一开始在UnaryExp → UnaryOp UnaryExp没有处理'!'运算符，已修正
+constInitVal忘记判断is_array

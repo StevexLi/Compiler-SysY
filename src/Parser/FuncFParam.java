@@ -9,7 +9,7 @@ import DataStructure.Token;
 import java.util.ArrayList;
 
 /**
- * 函数形参FuncFParam → BType Ident ['[' ']' { '[' ConstExp ']' }]
+ * 函数形参 FuncFParam → BType Ident ['[' ']' { '[' ConstExp ']' }]
  * // 1.普通变量 2.一维数组变量 3.二维数组变量
  *
  * @author Stevex
@@ -21,6 +21,7 @@ public class FuncFParam extends NonTerminal {
     ArrayList<ASTNode> Params_list = new ArrayList<>();
     int dim = 0;
     ASTNode const_exp;
+    ArrayList<ConstExp> const_exp_list = new ArrayList<>();
     FuncFParam() throws Exception {
         this.nt_type = NonTerminalType.FUNCFPARAM;
         BType = new ASTNode(new Token(new BType()));
@@ -47,7 +48,9 @@ public class FuncFParam extends NonTerminal {
                     Params_list.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
                     dim++;
-                    const_exp = new ASTNode(new Token(new ConstExp()));
+                    ConstExp e = new ConstExp();
+                    const_exp_list.add(e);
+                    const_exp = new ASTNode(new Token(e));
                     Params_list.add(const_exp);
                     if (Parser.now.equalLexType(LexType.RBRACK)){
                         Params_list.add(new ASTNode(Parser.now));
@@ -84,8 +87,8 @@ public class FuncFParam extends NonTerminal {
     public String getIdentString() {
         return Ident.getDataToken().token;
     }
-    public ConstExp getConstExp() {
-        return (ConstExp) const_exp.getDataToken().nt;
+    public ArrayList<ConstExp> getConstExp_list() {
+        return const_exp_list;
     }
     public int getDim() {
         return dim;

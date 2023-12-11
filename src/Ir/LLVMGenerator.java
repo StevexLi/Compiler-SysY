@@ -3,10 +3,12 @@ package Ir;
 import DataStructure.Token;
 import Ir.types.*;
 import Ir.values.*;
+import Ir.values.instructions.ConstArray;
 import Ir.values.instructions.IROp;
 import Lexer.LexType;
 import Parser.*;
 
+import java.lang.reflect.Type;
 import java.util.*;
 
 public class LLVMGenerator {
@@ -37,6 +39,13 @@ public class LLVMGenerator {
     private IRType tmp_type;
     private Integer save_value_int;
     private IROp save_op;
+
+    private Value cur_array;
+    private ArrayList<Integer> tmp_dims;
+    private boolean is_array = false;
+    private String tmp_name;
+    private int tmp_depth = 0;
+    private int tmp_offset = 0;
 
 
 
@@ -161,7 +170,7 @@ public class LLVMGenerator {
      */
     public void visitVarDef(VarDef varDef) {
         String ident_name = varDef.getIdentName();
-        if (varDef.getDim()==0){
+        if (varDef.getDim()==0){ // 非数组
             if (varDef.getInitVal()!=null){ // 有初始值
                 tmp_value = null;
                 if (is_global){
@@ -183,8 +192,42 @@ public class LLVMGenerator {
                 tmp_value = build_factory.buildVar(cur_block, tmp_value, is_const, tmp_type);
                 addSymbol(ident_name, tmp_value);
             }
-        } else { // TODO:数组
-
+        } else { // 数组
+            is_const = true;
+            ArrayList<Integer> dim_size = new ArrayList<>();
+            for (ConstExp e : varDef.getConst_exp_list()){ // 将维数计算出来
+                visitConstExp(e);
+                dim_size.add(save_value_int);
+            }
+            is_const = false;
+            tmp_dims = new ArrayList<>(dim_size);
+            IRType type = null;
+            for (int i=dim_size.size()-1;i>=0;i--){ // 从后往前一层层包裹
+                if (type==null){
+                    type = build_factory.getArrayType(tmp_type,dim_size.get(i));
+                } else {
+                    type = build_factory.getArrayType(type, dim_size.get(i));
+                }
+            }
+            if (is_global){
+                tmp_value = build_factory.buildGlobalArray(ident_name, type, false);
+                if (varDef.getInitVal()!=null){
+                    ((ConstArray) ((GlobalVar) tmp_value).getValue()).setInit(true);
+                }
+            } else {
+                tmp_value = build_factory.buildArray(cur_block, type, false);
+            }
+            addSymbol(ident_name, tmp_value);
+            cur_array = tmp_value;
+            if (varDef.getInitVal() != null){
+                is_array = true;
+                tmp_name = ident_name;
+                tmp_depth = 0;
+                tmp_offset = 0;
+                visitInitVal(varDef.getInitVal());
+                is_array = false;
+            }
+            is_const = false;
         }
     }
 
@@ -193,10 +236,39 @@ public class LLVMGenerator {
      * // 1.表达式初值 2.一维数组初值 3.二维数组初值
      */
     public void visitInitVal(InitVal initVal) {
-        if (initVal.getExp()!=null){
+        if (initVal.getExp()!=null && !is_array){
             visitExp(initVal.getExp());
-        } else { // TODO:数组
-
+        } else { // 数组
+            if (initVal.getExp() != null){
+                if (is_global){
+                    is_const = true;
+                }
+                save_value_int = null;
+                tmp_value = null;
+                visitExp(initVal.getExp());
+                is_const = false;
+                tmp_depth = 1;
+                if (is_global){
+                    tmp_value = build_factory.getConstInt(save_value_int);
+                    build_factory.buildInitArray(cur_array, tmp_offset, tmp_value);
+                } else {
+                    build_factory.buildStore(cur_block, build_factory.buildGEP(cur_block, cur_array, tmp_offset), tmp_value);
+                }
+                tmp_offset++;
+            } else if (!initVal.getInitVal_list().isEmpty()) { // 与ConstInitVal基本类似
+                int depth = 0, offset = tmp_offset;
+                for (InitVal initval : initVal.getInitVal_list()){
+                    visitInitVal(initval);
+                    depth = Math.max(depth, tmp_depth);
+                }
+                depth++;
+                int size = 1;
+                for (int i=1; i<depth; i++){
+                    size *= tmp_dims.get(tmp_dims.size()-i);
+                }
+                tmp_offset = Math.max(tmp_offset, offset+size);
+                tmp_depth = depth;
+            }
         }
     }
 
@@ -231,8 +303,36 @@ public class LLVMGenerator {
                 tmp_value = build_factory.buildVar(cur_block, tmp_value, true, tmp_type);
                 addSymbol(ident_name, tmp_value);
             }
-        } else { // TODO:数组
-
+        } else { // 数组
+            is_const = true;
+            ArrayList<Integer> dim_size = new ArrayList<>();
+            for (ConstExp e : constDef.getConst_exp_list()){ // 将维数计算出来
+                visitConstExp(e);
+                dim_size.add(save_value_int);
+            }
+            tmp_dims = new ArrayList<>(dim_size);
+            IRType type = null;
+            for (int i=dim_size.size()-1;i>=0;i--){ // 从后往前一层层包裹
+                if (type==null){
+                    type = build_factory.getArrayType(tmp_type,dim_size.get(i));
+                } else {
+                    type = build_factory.getArrayType(type, dim_size.get(i));
+                }
+            }
+            if (is_global){
+                tmp_value = build_factory.buildGlobalArray(ident_name, type, true);
+                ((ConstArray) ((GlobalVar) tmp_value).getValue()).setInit(true);
+            } else {
+                tmp_value = build_factory.buildArray(cur_block, type, true);
+            }
+            addSymbol(ident_name, tmp_value);
+            cur_array = tmp_value;
+            is_array = true;
+            tmp_name = ident_name;
+            tmp_depth = 0;
+            tmp_offset = 0;
+            visitConstInitVal(constDef.getConstInitVal());
+            is_array = false;
         }
     }
 
@@ -242,10 +342,41 @@ public class LLVMGenerator {
      * // 1.常表达式初值 2.一维数组初值 3.二维数组初值
      */
     public void visitConstInitVal(ConstInitVal constInitVal) {
-        if (constInitVal.getConstExp()!=null){
+        if (constInitVal.getConstExp()!=null && !is_array){
             visitConstExp(constInitVal.getConstExp());
-        } else { //TODO:数组
-
+        } else { // 数组
+            if (constInitVal.getConstExp()!=null){
+                tmp_value = null;
+                visitConstExp(constInitVal.getConstExp());
+                tmp_depth = 1;
+                tmp_value = build_factory.getConstInt(save_value_int);
+                if (is_global){
+                    build_factory.buildInitArray(cur_array, tmp_offset, tmp_value);
+                } else {
+                    build_factory.buildStore(cur_block, build_factory.buildGEP(cur_block, cur_array, tmp_offset), tmp_value);
+                }
+                StringBuilder name = new StringBuilder(tmp_name);
+                ArrayList<Value> values = ((ArrayType)((PointerType)cur_array.getType()).getTargetType()).offset2Index(tmp_offset);
+                for (Value v : values){
+                    name.append(((ConstInt) v).getValue()).append(";");
+                }
+                addConstSymbol(name.toString(), save_value_int);
+                tmp_offset++;
+            } else if (!constInitVal.getConstInitVal_list().isEmpty()){
+                int depth = 0;
+                int offset = tmp_offset;
+                for (ConstInitVal initval : constInitVal.getConstInitVal_list()){
+                    visitConstInitVal(initval);
+                    depth = Math.max(depth, tmp_depth);
+                }
+                depth++;
+                int size = 1;
+                for (int i=1; i<depth; i++){
+                    size *= tmp_dims.get(tmp_dims.size()-i);
+                }
+                tmp_offset = Math.max(tmp_offset, offset+size);
+                tmp_depth = depth;
+            }
         }
     }
 
@@ -311,6 +442,9 @@ public class LLVMGenerator {
         }
     }
 
+    /**
+     * FuncFParam → BType Ident ['[' ']' { '[' ConstExp ']' }]
+     */
     public void visitFuncFParam(FuncFParam funcFParam) {
         if (is_reg) {
             int i = tmp_index;
@@ -322,8 +456,27 @@ public class LLVMGenerator {
                 switch (funcFParam.getType()){
                     case INTTK -> tmp_type = IntegerType.i32;
                 }
-            } else { // TODO:数组
-
+            } else { // 数组
+                ArrayList<Integer> dims = new ArrayList<>();
+                dims.add(-1);
+                if (!funcFParam.getConstExp_list().isEmpty()){
+                    for (ConstExp const_exp : funcFParam.getConstExp_list()){
+                        is_const = true;
+                        visitConstExp(const_exp);
+                        dims.add(save_value_int);
+                        is_const = false;
+                    }
+                }
+                tmp_type = null;
+//                System.out.println(dims);
+                for (int i= dims.size()-1; i>=0; i--){
+                    if (tmp_type == null){
+                        switch (funcFParam.getType()){
+                            case INTTK -> tmp_type = IntegerType.i32;
+                        }
+                    }
+                    tmp_type = build_factory.getArrayType(tmp_type, dims.get(i));
+                }
             }
 
         }
@@ -368,13 +521,31 @@ public class LLVMGenerator {
         }
     }
 
-    public void visitForStmt(ForStmt stmt){
+    /**
+     * ForStmt → LVal '=' Exp
+     */
+    public void visitForStmt(ForStmt stmt){ // 与Stmt中LVal = Exp 一致
         if (stmt.getLVal().getExps().isEmpty()){ // LVal非数组
             Value pointer = getValue(stmt.getLVal().getIdentString());
             visitExp(stmt.getExp_single());
             tmp_value = build_factory.buildStore(cur_block, pointer, tmp_value);
-        } else { // TODO:数组
-
+        } else { // 数组
+            ArrayList<Value> index_list = new ArrayList<>();
+            for (Exp exp : stmt.getLVal().getExps()){
+                visitExp(exp);
+                index_list.add(tmp_value);
+            }
+            tmp_value = getValue(stmt.getLVal().getIdentString());
+            IRType type = tmp_value.getType();
+            IRType target_type = ((PointerType) type).getTargetType();
+            if (target_type instanceof PointerType){ // 形如 a[][1]
+                tmp_value = build_factory.buildLoad(cur_block, tmp_value);
+            } else { // 形如 a[1][2]
+                index_list.add(0, ConstInt.ZERO);
+            }
+            Value addr = build_factory.buildGEP(cur_block, tmp_value, index_list);
+            visitExp(stmt.getExp_single());
+            tmp_value = build_factory.buildStore(cur_block, addr, tmp_value);
         }
     }
 
@@ -397,8 +568,23 @@ public class LLVMGenerator {
                     Value pointer = getValue(stmt.getLVal().getIdentString());
                     visitExp(stmt.getExp_single());
                     tmp_value = build_factory.buildStore(cur_block, pointer, tmp_value);
-                } else { // TODO:数组
-
+                } else { // 数组
+                    ArrayList<Value> index_list = new ArrayList<>();
+                    for (Exp exp : stmt.getLVal().getExps()){
+                        visitExp(exp);
+                        index_list.add(tmp_value);
+                    }
+                    tmp_value = getValue(stmt.getLVal().getIdentString());
+                    IRType type = tmp_value.getType();
+                    IRType target_type = ((PointerType) type).getTargetType();
+                    if (target_type instanceof PointerType){ // 形如 a[][1]
+                        tmp_value = build_factory.buildLoad(cur_block, tmp_value);
+                    } else { // 形如 a[1][2]
+                        index_list.add(0, ConstInt.ZERO);
+                    }
+                    Value addr = build_factory.buildGEP(cur_block, tmp_value, index_list);
+                    visitExp(stmt.getExp_single());
+                    tmp_value = build_factory.buildStore(cur_block, addr, tmp_value);
                 }
                 break;
             case EXP:
@@ -567,7 +753,7 @@ public class LLVMGenerator {
                     build_factory.buildReturn(cur_block, tmp_value);
                 } else { // 无Exp
                     build_factory.buildReturn(cur_block);
-                    System.out.println(stmt.getExp_single());
+//                    System.out.println(stmt.getExp_single());
                 }
                 break;
             case LVALASSIGNGETINT:
@@ -575,8 +761,23 @@ public class LLVMGenerator {
                     Value pointer = getValue(stmt.getLVal().getIdentString());
                     tmp_value = build_factory.buildCall(cur_block, (Function) getValue("getint"), new ArrayList<>());
                     build_factory.buildStore(cur_block, pointer, tmp_value);
-                } else { // TODO:数组
-
+                } else { // 数组
+                    ArrayList<Value> index_list = new ArrayList<>();
+                    for (Exp exp : stmt.getLVal().getExps()){
+                        visitExp(exp);
+                        index_list.add(tmp_value);
+                    }
+                    tmp_value = getValue(stmt.getLVal().getIdentString());
+                    IRType type = tmp_value.getType();
+                    IRType target_type = ((PointerType) type).getTargetType();
+                    if (target_type instanceof PointerType){ // 形如 a[][1]
+                        tmp_value = build_factory.buildLoad(cur_block, tmp_value);
+                    } else { // 形如 a[1][2]
+                        index_list.add(0, ConstInt.ZERO);
+                    }
+                    Value addr = build_factory.buildGEP(cur_block, tmp_value, index_list);
+                    Value in = build_factory.buildCall(cur_block, (Function) getValue("getint"), new ArrayList<>());
+                    tmp_value = build_factory.buildStore(cur_block, addr, in);
                 }
                 break;
             case PRINTF:
@@ -803,7 +1004,10 @@ public class LLVMGenerator {
                         tmp_value = build_factory.buildBinary(cur_block, IROp.Sub, ConstInt.ZERO, tmp_value);
                     }
                 }
-                //                case NOT ->
+                case NOT -> {
+                    visitUnaryExp(unary_exp.getUnaryExp());
+                    tmp_value = build_factory.buildNot(cur_block, tmp_value);
+                }
             }
         } else { // Ident '(' [FuncRParams] ')'
             func_rparam_list = new ArrayList<>();
@@ -861,14 +1065,38 @@ public class LLVMGenerator {
                 if (l==null){ // 符号表中没有指定的变量
                     System.out.println("error in LLVMGen, LVal");
                 }
-                IRType type = l.getType();
+                IRType type = l.getType(); // 前面已经过错误处理，保证非空
                 if (!(((PointerType) type).getTargetType() instanceof ArrayType)){
                     tmp_value = build_factory.buildLoad(cur_block, tmp_value);
-                } else { // TODO:数组
-
+                } else { //
+                    ArrayList<Value> indexList = new ArrayList<>();
+                    indexList.add(ConstInt.ZERO);
+                    indexList.add(ConstInt.ZERO);
+                    tmp_value = build_factory.buildGEP(cur_block, tmp_value, indexList);
                 }
-            } else { // TODO:数组
-
+            } else { // 数组
+                ArrayList<Value> index_list = new ArrayList<>();
+                for (Exp exp : lVal.getExps()){
+                    visitExp(exp);
+                    index_list.add(tmp_value);
+                }
+                tmp_value = getValue(lVal.getIdentString());
+                IRType type = tmp_value.getType(); // 前面已经过错误处理，保证非空
+                IRType target_type = ((PointerType) type).getTargetType();
+                if (target_type instanceof PointerType){ // 形如 a[][1]
+                    tmp_value = build_factory.buildLoad(cur_block, tmp_value);
+                } else { // 形如 a[0][1]
+                    index_list.add(0, ConstInt.ZERO);
+                }
+                Value addr = build_factory.buildGEP(cur_block, tmp_value, index_list);
+                if (((PointerType)addr.getType()).getTargetType() instanceof ArrayType){
+                    ArrayList<Value> index_list_2 = new ArrayList<>();
+                    index_list_2.add(ConstInt.ZERO);
+                    index_list_2.add(ConstInt.ZERO);
+                    tmp_value = build_factory.buildGEP(cur_block, addr, index_list_2);
+                } else {
+                    tmp_value = build_factory.buildLoad(cur_block, addr);
+                }
             }
         }
     }

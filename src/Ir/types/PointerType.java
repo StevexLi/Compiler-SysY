@@ -11,6 +11,10 @@ public class PointerType implements IRType {
         return point_for;
     }
 
+    public boolean isString(){
+        return point_for instanceof ArrayType && ((ArrayType) point_for).isString();
+    }
+
     @Override
     public String toString() {
         return point_for.toString() + "*";

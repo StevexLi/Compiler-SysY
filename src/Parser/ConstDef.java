@@ -18,6 +18,7 @@ public class ConstDef extends NonTerminal {
     ASTNode ASSIGN;
     ASTNode ConstInitVal;
     int dim = 0;
+    ArrayList<ConstExp> const_exp_list = new ArrayList<>();
     ConstDef(LexType value_type) throws Exception {
         this.nt_type = NonTerminalType.CONSTDEF;
         if (Parser.now.isIdent()) {
@@ -35,7 +36,9 @@ public class ConstDef extends NonTerminal {
                 if (Parser.now.equalLexType(LexType.LBRACK)){
                     ConstExp.add(new ASTNode(Parser.now));
                     Parser.lexer.next();
-                    ConstExp.add(new ASTNode(new Token(new ConstExp())));
+                    ConstExp e = new ConstExp();
+                    const_exp_list.add(e);
+                    ConstExp.add(new ASTNode(new Token(e)));
                     if (Parser.now.equalLexType(LexType.RBRACK)){
                         ConstExp.add(new ASTNode(Parser.now));
                         Parser.lexer.next();
@@ -92,6 +95,10 @@ public class ConstDef extends NonTerminal {
 
     public int getDim() {
         return dim;
+    }
+
+    public ArrayList<ConstExp> getConst_exp_list() {
+        return const_exp_list;
     }
 
     public ConstInitVal getConstInitVal() {
