@@ -45,7 +45,7 @@ public class Compiler {
     /**
      * 是否进行错误检测
      */
-    public static boolean error_detection = false;
+    public static boolean error_detection = true;
     /**
      * 错误输出文件
      */
@@ -129,11 +129,13 @@ public class Compiler {
             Lexer lexer = new Lexer(source_code_string,token_list);
             Parser parser = new Parser(lexer,ast,token_list,ast_post_root_traverse,s_table_list);
 //            writeTokenList();
-//            writeErrorList();
-            LLVMGenerator.getInstance().visitCompUnit(parser.getCompUnit());
-            llvm_code = IRModule.getInstance().toString();
-            writeLLVMCode();
-
+            if (!error_list.isEmpty()){
+                writeErrorList();
+            } else {
+                LLVMGenerator.getInstance().visitCompUnit(parser.getCompUnit());
+                llvm_code = IRModule.getInstance().toString();
+                writeLLVMCode();
+            }
         } catch (CompilerException e) {
             if (!e.getType().equals("0")){
                 System.out.println("Exception.CompilerException:"+e.getType()+' '+e.getLine()+' '+e.getMessage());

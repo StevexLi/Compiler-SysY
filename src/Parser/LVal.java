@@ -39,14 +39,14 @@ public class LVal extends NonTerminal {
                 Exp exp = new Exp();
                 Exps.add(exp);
                 Exp_list.add(new ASTNode(new Token(exp)));
-                if (Parser.now.equalLexType(LexType.RBRACK))
+                if (Parser.now.equalLexType(LexType.RBRACK)){
                     Exp_list.add(new ASTNode(Parser.now));
-                else {
+                    Parser.lexer.next();
+                } else {
 //                    throw new CompilerException("2",Parser.now.line,"LVal");
                     ErrorReporter.reportError(Parser.prev.line, ErrorType.EK); // fixme:错误处理k
                     Exp_list.add(new ASTNode(new Token("]",LexType.RBRACK,Parser.prev.line))); // 补一个RBRACK，以保证可以正常按index取到dim的exp
                 }
-                Parser.lexer.next();
                 brackets_num++;
             }
             setFirstchild(Exp_list.get(0));
