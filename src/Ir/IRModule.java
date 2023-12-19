@@ -50,6 +50,10 @@ public class IRModule {
         }
     }
 
+    public ArrayList<GlobalVar> getGlobalVars() {
+        return global_vars;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb_gyj = new StringBuilder();

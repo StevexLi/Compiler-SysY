@@ -41,6 +41,70 @@ public class BinaryIns extends Instruction {
         };
     }
 
+    public boolean isAdd() {
+        return this.getOp() == IROp.Add;
+    }
+
+    public boolean isSub() {
+        return this.getOp() == IROp.Sub;
+    }
+
+    public boolean isMul() {
+        return this.getOp() == IROp.Mul;
+    }
+
+    public boolean isDiv() {
+        return this.getOp() == IROp.Div;
+    }
+
+    public boolean isMod() {
+        return this.getOp() == IROp.Mod;
+    }
+
+    public boolean isShl() {
+        return this.getOp() == IROp.Shl;
+    }
+
+    public boolean isShr() {
+        return this.getOp() == IROp.Shr;
+    }
+
+    public boolean isAnd() {
+        return this.getOp() == IROp.And;
+    }
+
+    public boolean isOr() {
+        return this.getOp() == IROp.Or;
+    }
+
+    public boolean isLt() {
+        return this.getOp() == IROp.Lt;
+    }
+
+    public boolean isLe() {
+        return this.getOp() == IROp.Le;
+    }
+
+    public boolean isGe() {
+        return this.getOp() == IROp.Ge;
+    }
+
+    public boolean isGt() {
+        return this.getOp() == IROp.Gt;
+    }
+
+    public boolean isEq() {
+        return this.getOp() == IROp.Eq;
+    }
+
+    public boolean isNe() {
+        return this.getOp() == IROp.Ne;
+    }
+
+    public boolean isNot() {
+        return this.getOp() == IROp.Not;
+    }
+
     @Override
     public String toString() {
         String s = getName() + " = ";

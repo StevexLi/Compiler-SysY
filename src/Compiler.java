@@ -4,6 +4,7 @@ import Ir.LLVMGenerator;
 import Lexer.*;
 import Exception.*;
 import Parser.*;
+import BackEnd.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -59,6 +60,16 @@ public class Compiler {
      */
     static String llvm_output = "llvm_ir.txt";
     static String llvm_code;
+    static String optimized_llvm_output = "optimized_llvm_ir.txt";
+    static String optimized_llvm_code;
+    static String mips_output = "mips.txt";
+    static String mips_code;
+
+    static boolean optimize = false;
+    static boolean MIPS = true;
+    static boolean output_llvm = false;
+    static boolean output_llvm_optimized = false;
+    static boolean output_mips = true;
 
     /**
      * @param source_code 源代码文件路径
@@ -117,6 +128,22 @@ public class Compiler {
         writer.close();
     }
 
+    static void writeOptimizedLLVMCode() throws IOException {
+        FileWriter writer;
+        writer = new FileWriter(optimized_llvm_output);
+        writer.write(optimized_llvm_code);
+        writer.flush();
+        writer.close();
+    }
+
+    static void writeMIPSCode() throws IOException {
+        FileWriter writer;
+        writer = new FileWriter(mips_output);
+        writer.write(mips_code);
+        writer.flush();
+        writer.close();
+    }
+
     /**
      * 主函数
      *
@@ -129,12 +156,27 @@ public class Compiler {
             Lexer lexer = new Lexer(source_code_string,token_list);
             Parser parser = new Parser(lexer,ast,token_list,ast_post_root_traverse,s_table_list);
 //            writeTokenList();
-            if (!error_list.isEmpty()){
+            if (!error_list.isEmpty()){ // 有错误则不进行中间代码生成
                 writeErrorList();
             } else {
                 LLVMGenerator.getInstance().visitCompUnit(parser.getCompUnit());
                 llvm_code = IRModule.getInstance().toString();
-                writeLLVMCode();
+                if (optimize){ // 优化中间代码
+
+                }
+                if (MIPS){ // 生成MIPS
+                    MIPSGenerator.getInstance().loadIR();
+                    mips_code = MIPSGenerator.getInstance().genMips();
+                }
+                if (output_llvm){ // 输出llvm_ir
+                    writeLLVMCode();
+                }
+                if (output_llvm_optimized){
+                    writeOptimizedLLVMCode();
+                }
+                if (output_mips){
+                    writeMIPSCode();
+                }
             }
         } catch (CompilerException e) {
             if (!e.getType().equals("0")){

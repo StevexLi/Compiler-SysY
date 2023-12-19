@@ -35,6 +35,13 @@ public class Value {
         this.uses_list = tmp_list;
     }
 
+    public boolean isNumber() {
+        return this instanceof ConstInt;
+    }
+    public boolean isGlobal() {
+        return name.startsWith("@");
+    }
+
 
     public IRModule getModule() {
         return module;
@@ -43,9 +50,24 @@ public class Value {
     public String getName() {
         return name;
     }
+    public String getGlobalName() {
+        return name.replaceAll("@", "");
+    }
+    public String getId() {
+        return id;
+    }
 
     public IRType getType() {
         return type;
+    }
+
+    public String getUniqueName() {
+        if (isNumber()) return getName();
+        if (isGlobal()) return getGlobalName();
+        return getName() + "_" + getId();
+    }
+    public int getNumber() {
+        return Integer.parseInt(name);
     }
 
 

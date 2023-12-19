@@ -3,6 +3,7 @@ package Ir.values;
 import Ir.IRModule;
 import Ir.types.IRType;
 import Ir.types.PointerType;
+import Ir.values.instructions.ConstArray;
 
 public class GlobalVar extends User{
     private boolean is_const;
@@ -17,6 +18,17 @@ public class GlobalVar extends User{
 
     public Value getValue() {
         return value;
+    }
+
+    public boolean isString() {
+        return value instanceof ConstString;
+    }
+    public boolean isInt() {
+        return value instanceof ConstInt;
+    }
+
+    public boolean isArray() {
+        return value instanceof ConstArray;
     }
 
     @Override

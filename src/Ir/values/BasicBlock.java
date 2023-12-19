@@ -40,6 +40,10 @@ public class BasicBlock extends Value {
         return node;
     }
 
+    public String getLabelName() {
+        return "label_" + getId();
+    }
+
     public List<BasicBlock> getPredecessors() {
         return pred;
     }

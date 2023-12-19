@@ -7,6 +7,7 @@ import Ir.values.ConstInt;
 import Ir.values.Value;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ConstArray extends Const{
     private IRType elem_type;
@@ -30,6 +31,35 @@ public class ConstArray extends Const{
         }
     }
 
+    public ArrayList<Value> get1DArray() {
+        ArrayList<Value> result = new ArrayList<>();
+        for (Value value : arr) {
+            if (value instanceof ConstArray) {
+                result.addAll(((ConstArray) value).get1DArray());
+            } else {
+                result.add(value);
+            }
+        }
+        return result;
+    }
+
+    public boolean allZero() {
+        for (Value value : arr) {
+            if (value instanceof ConstInt) {
+                if (((ConstInt) value).getValue() != 0) {
+                    return false;
+                }
+            } else {
+                if (!((ConstArray) value).allZero()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    public boolean isInit() {
+        return init || !allZero();
+    }
 
     public void setInit(boolean init){
         this.init = init;

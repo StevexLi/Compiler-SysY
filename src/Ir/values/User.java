@@ -22,6 +22,9 @@ public abstract class User extends Value {
     public ArrayList<Value> getOperands() {
         return operands;
     }
+    public Value getOperand(int index) {
+        return operands.get(index);
+    }
     public void removeUseFromOperands() {
         if (operands==null)
             return;
