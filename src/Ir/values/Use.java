@@ -17,6 +17,9 @@ public class Use {
         this.op_pos = op_pos;
     }
 
+    public int getPosOfOperand() {
+        return op_pos;
+    }
 
     public User getUser() {
         return user;

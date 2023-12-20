@@ -1,6 +1,7 @@
 import DataStructure.*;
 import Ir.IRModule;
 import Ir.LLVMGenerator;
+import Ir.optimization.PassModule;
 import Lexer.*;
 import Exception.*;
 import Parser.*;
@@ -65,7 +66,7 @@ public class Compiler {
     static String mips_output = "mips.txt";
     static String mips_code;
 
-    static boolean optimize = false;
+    static boolean optimize = true;
     static boolean MIPS = true;
     static boolean output_llvm = false;
     static boolean output_llvm_optimized = false;
@@ -162,7 +163,8 @@ public class Compiler {
                 LLVMGenerator.getInstance().visitCompUnit(parser.getCompUnit());
                 llvm_code = IRModule.getInstance().toString();
                 if (optimize){ // 优化中间代码
-
+                    PassModule.getInstance().runIRPasses();
+                    optimized_llvm_code = IRModule.getInstance().toString();
                 }
                 if (MIPS){ // 生成MIPS
                     MIPSGenerator.getInstance().loadIR();

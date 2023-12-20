@@ -28,6 +28,10 @@ public class Instruction extends User {
         }
     }
 
+    public BasicBlock getParent() {
+        return this.getNode().getParent().getValue();
+    }
+
     public IROp getOp() {
         return op;
     }

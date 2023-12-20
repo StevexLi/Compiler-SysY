@@ -3,10 +3,11 @@ package Ir.values;
 import DataStructure.IList;
 import DataStructure.INode;
 import Ir.IRModule;
+import Ir.optimization.LoopInfo;
 import Ir.types.FunctionType;
 import Ir.types.IRType;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class Function extends Value {
     private IList<BasicBlock, Function> list;
@@ -17,6 +18,13 @@ public class Function extends Value {
     private boolean is_lib_func;
 
     private boolean NotAllLibSucc = false;
+    private final LoopInfo loopInfo = new LoopInfo(this);
+    private Map<BasicBlock, BasicBlock> idom = new HashMap<>();
+    private Map<BasicBlock, Set<BasicBlock>> dom = new HashMap<>();
+    private Map<BasicBlock, List<BasicBlock>> idoms = new HashMap<>();
+
+
+
 
 
     public Function(String name, IRType type, boolean isLibraryFunc) {
@@ -37,6 +45,13 @@ public class Function extends Value {
     public IList<BasicBlock, Function> getList() {
         return list;
     }
+    public LoopInfo getLoopInfo() {
+        return loopInfo;
+    }
+    public Map<BasicBlock, Set<BasicBlock>> getDom() {
+        return dom;
+    }
+
     public ArrayList<Value> getArguments() {
         return new ArrayList<Value>(arguments);
     }
@@ -53,11 +68,28 @@ public class Function extends Value {
             NotAllLibSucc = true;
     }
 
+    public void setDom(Map<BasicBlock, Set<BasicBlock>> dom) {
+        this.dom = dom;
+    }
+    public void setIdom(Map<BasicBlock, BasicBlock> idom) {
+        this.idom = idom;
+    }
+    public void setIdoms(Map<BasicBlock, List<BasicBlock>> idoms) {
+        this.idoms = idoms;
+    }
+    public Map<BasicBlock, List<BasicBlock>> getIdoms() {
+        return idoms;
+    }
+
 
     public void refreshArgReg() {
         for (Argument arg : arguments) {
             arg.setName("%" + reg_num++);
         }
+    }
+
+    public void computeSimpLoopInfo() {
+        loopInfo.computeLoopInfo(this);
     }
 
     public String toString() {

@@ -8,7 +8,9 @@ import Ir.types.VoidType;
 import Ir.values.instructions.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 基本块
@@ -21,7 +23,7 @@ public class BasicBlock extends Value {
     private INode<BasicBlock, Function> node;
     private ArrayList<BasicBlock> pred; // 前驱基本块
     private ArrayList<BasicBlock> succ; // 后继基本块
-    private int dom_level;
+    private int domLevel;
 
     public BasicBlock(Function func) {
         super(String.valueOf(reg_num++), new LabelType());
@@ -44,11 +46,20 @@ public class BasicBlock extends Value {
         return "label_" + getId();
     }
 
-    public List<BasicBlock> getPredecessors() {
+    public ArrayList<BasicBlock> getPredecessors() {
         return pred;
     }
-    public List<BasicBlock> getSuccessors() {
+    public ArrayList<BasicBlock> getSuccessors() {
         return succ;
+    }
+    public int getLoopDepth() {
+        return node.getParent().getValue().getLoopInfo().getLoopDepth(this);
+    }
+    public void setSuccessors(ArrayList<BasicBlock> successors) {
+        this.succ = successors;
+    }
+    public void setDomLevel(int domLevel) {
+        this.domLevel = domLevel;
     }
     public void addPredecessor(BasicBlock block){
         pred.add(block);
@@ -67,6 +78,49 @@ public class BasicBlock extends Value {
                             ((FunctionType) ins.getOperands().get(0).getType()).getRet_type() instanceof VoidType))){
                 ins.setName("%"+reg_num++);
             }
+        }
+    }
+
+    public void removeSelf() {
+        for (BasicBlock bb : this.getPredecessors()) {
+            bb.getSuccessors().removeIf(basicBlock -> basicBlock.equals(this));
+        }
+        for (BasicBlock bb : this.getSuccessors()) {
+            bb.getPredecessors().forEach(pred -> {
+                if (pred.equals(this)) {
+                    removeBasicBlockSucc(this, bb);
+                }
+            });
+            bb.getPredecessors().removeIf(basicBlock -> basicBlock.equals(this));
+        }
+
+        for (INode<Instruction, BasicBlock> instNode : getIns()) {
+            Instruction inst = instNode.getValue();
+            inst.removeUseFromOperands();
+        }
+        this.getNode().removeFromList();
+    }
+
+    public void removeBasicBlockSucc(BasicBlock pred, BasicBlock succ) {
+        Set<Integer> idx = new HashSet<>();
+        idx.add(succ.getPredecessors().indexOf(pred));
+        INode<Instruction, BasicBlock> instNode = succ.getIns().getBegin();
+        while (instNode != null) {
+            INode<Instruction, BasicBlock> ninstNode = instNode.getNext();
+            Instruction inst = instNode.getValue();
+            if (!(inst instanceof PhiIns)) {
+                break;
+            }
+
+            if (inst.getOperands().size() == 1) {
+                inst.replaceUsedWith(inst.getOperands().get(0));
+                inst.removeUseFromOperands();
+                instNode.removeFromList();
+            } else {
+                inst.removeNumberOperand(idx);
+            }
+
+            instNode = ninstNode;
         }
     }
 

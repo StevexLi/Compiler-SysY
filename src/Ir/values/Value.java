@@ -4,6 +4,7 @@ import Ir.IRModule;
 import Ir.types.IRType;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Value {
     private IRModule module = IRModule.getInstance();
@@ -33,6 +34,14 @@ public class Value {
             }
         }
         this.uses_list = tmp_list;
+    }
+
+    public void replaceUsedWith(Value value) {
+        List<Use> tmp = new ArrayList<>(uses_list);
+        for (Use use : tmp) {
+            use.getUser().setOperands(use.getPosOfOperand(), value);
+        }
+        this.uses_list.clear();
     }
 
     public boolean isNumber() {
