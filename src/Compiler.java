@@ -68,8 +68,8 @@ public class Compiler {
 
     static boolean optimize = true;
     static boolean MIPS = true;
-    static boolean output_llvm = false;
-    static boolean output_llvm_optimized = false;
+    static boolean output_llvm = true;
+    static boolean output_llvm_optimized = true;
     static boolean output_mips = true;
 
     /**

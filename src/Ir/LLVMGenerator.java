@@ -486,6 +486,9 @@ public class LLVMGenerator {
      * MainFuncDef → 'int' 'main' '(' ')' Block
      */
     public void visitMainFuncDef(MainFuncDef mainFuncDef) {
+        if (mainFuncDef==null){
+            return;
+        }
         Function func = build_factory.buildFunction("main",IntegerType.i32, new ArrayList<>());
         cur_func = func;
         addSymbol("main",func);

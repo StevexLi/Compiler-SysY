@@ -1,7 +1,0 @@
-int test;
-int main(){
-    printf("Hello World\n");
-    test = getint();
-    printf("%d",test);
-    return 0;
-}
